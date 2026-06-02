@@ -1,3 +1,5 @@
+module;
+#include <assimp/material.h>
 export module CEngine.Render;
 export import :GLSL;
 export import :ShaderProgram;

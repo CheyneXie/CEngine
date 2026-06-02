@@ -38,6 +38,7 @@ namespace CEngine {
             for (const auto child: Children | std::views::values) {
                 delete child;
             }
+            if (Behaviour) delete Behaviour;
         }
 
         virtual const char *GetTypeName() {
@@ -165,9 +166,9 @@ namespace CEngine {
         Node *getParent() const { return Parent; }
 
         /// @property Behaviour
-        std::shared_ptr<Behaviour> GetBehaviour() const { return Behaviour; }
+        Behaviour *GetBehaviour() const { return Behaviour; }
 
-        void SetBehaviour(const std::shared_ptr<Behaviour> &behaviour) {
+        void SetBehaviour(Behaviour *behaviour) {
             Behaviour = behaviour;
             Behaviour->SetParentNode(this);
         }
@@ -184,7 +185,7 @@ namespace CEngine {
         /// @brief 所有子级
         std::unordered_map<std::string, Node *> Children;
         ///
-        std::shared_ptr<Behaviour> Behaviour = nullptr;
+        Behaviour *Behaviour = nullptr;
     };
 
     const char *Node::TAG = "Node";

@@ -8,7 +8,6 @@
 
 export module CEngine.PresetsLoader;
 import std;
-import CEngine.Engine;
 import CEngine.Render;
 import CEngine.Node;
 import CEngine.Logger;
@@ -60,8 +59,6 @@ namespace CEngine {
 
     const char *PresetsLoader::TAG = "预设加载器";
 
-    void Engine::LoadAllPresets() const {
-        PresetsLoader::LoadAll();
-    }
+
 
 }

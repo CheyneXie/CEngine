@@ -16,14 +16,14 @@ namespace CEngine {
     public:
         template<class T>
         static void Register() {
-            std::string name = typeid(T).name();
-            if (const auto pos = name.find("class "); pos != std::string::npos)
-                name.erase(pos, 6);
-            Behaviours[name] = []() -> Behaviour *{ return new T(); };
-            LogI("Behaviour工厂") << "注册Behaviour: " << name;
+            Behaviours[T::Name] = []() -> Behaviour* {
+                LogD("Behaviour工厂") << "创建Behaviour: " << T::Name;
+                return new T();
+            };
+            LogI("Behaviour工厂") << "注册Behaviour: " << T::Name;
         }
 
-        static Behaviour *CreateBehaviour(const std::string &name) {
+        static Behaviour* CreateBehaviour(const std::string &name) {
             if (Behaviours.contains(name))
                 return Behaviours[name]();
             return nullptr;

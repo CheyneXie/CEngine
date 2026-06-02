@@ -132,4 +132,6 @@ namespace CEngine {
         ColorMode mColorMode;
         void *Data;
     };
+
+    const char *Image::TAG = "Image";
 }

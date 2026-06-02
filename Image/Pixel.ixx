@@ -6,8 +6,10 @@
  * @date 2024/09/29
  */
 
+module;
+#include <string.h>
 export module CEngine.Image:Pixel;
-import std.compat;
+import std;
 import CEngine.Utils;
 import CEngine.Logger;
 

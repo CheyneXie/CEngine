@@ -7,8 +7,11 @@
  */
 
 module;
+#ifdef _WIN32
 #include <shobjidl_core.h>
+#endif
 export module CEngine.Utils.WindowsFileDialog;
+#ifdef _WIN32
 import std;
 namespace fs = std::filesystem;
 
@@ -139,3 +142,4 @@ namespace CEngine::Utils::WindowsFileDialog {
         return "";
     }
 }
+#endif

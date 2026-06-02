@@ -7,10 +7,10 @@
  */
 
 module;
-#include <limits>
+#include <climits>
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui/imgui.h"
-export module CEngine.UI.EditorUI:Inspector;
+export module CEngine.EditorUI:Inspector;
 import :SceneTreeBrowser;
 import std;
 import CEngine.Base;

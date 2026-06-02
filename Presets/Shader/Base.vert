@@ -2,7 +2,7 @@
 // Created by chaim on 24-09-30.
 //
 
-#version 460 core
+#version 430 core
 
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Normal;

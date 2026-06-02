@@ -8,7 +8,7 @@
 
 module;
 #include <glad/glad.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 export module CEngine.Engine;
@@ -58,8 +58,6 @@ namespace CEngine {
 
         std::pair<int, int> GetScreenSize() const;
 
-        void LoadAllPresets() const;
-
         /// @property RootNode
         Node3D *getRoot() const { return RootNode; }
 
@@ -71,7 +69,7 @@ namespace CEngine {
 
         /// @property ui
         void setUI(UI *u) {
-            if (!ui->IsValid())
+            if (ui == nullptr || !ui->IsValid())
                 u->InitUI();
             ui = u;
         }
@@ -96,9 +94,6 @@ namespace CEngine {
          *  @brief 事件：引擎退出时
          */
         Event<void()> Event_Destroy;
-
-        /// Ready时添加飞行相机
-        bool AddFlyCamera3DWhenReady = false;
 
     private:
         Engine();
@@ -128,11 +123,6 @@ namespace CEngine {
         * 当引擎退出时
         */
         void Destroy();
-
-        /**
-         * 向ToolNode添加飞行相机
-         */
-        void AddFlyCamera3D() const;
     };
 
     const char *Engine::TAG = "引擎";
@@ -141,9 +131,10 @@ namespace CEngine {
     Engine::Engine() {
         Ins = this;
         window = nullptr;
+        ui = nullptr;
         glfwInit();
         glfwWindowHint(GLFW_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_VERSION_MINOR, 3);
         RootNode->setName("Root");
         ToolNode->setName("ToolNode");
     }
@@ -165,8 +156,6 @@ namespace CEngine {
         glfwMakeContextCurrent(window);
         glfwSwapInterval(0); // 关闭垂直同步
         LogS(TAG) << "窗口创建成功.";
-
-        setUI(new UI(window));
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             LogE(TAG) << "GLAD加载失败!";
@@ -218,9 +207,9 @@ namespace CEngine {
         glEnable(GL_CULL_FACE);
         // 订阅Camera激活事件
         Camera::Event_CameraActivated += [&](Camera *cam) {
+            LogI(TAG) << "活动相机变更";
             this->CurrentCamera = cam;
         };
-        if (AddFlyCamera3DWhenReady) AddFlyCamera3D();
         // 触发Event
         Event_Ready.Invoke();
     }

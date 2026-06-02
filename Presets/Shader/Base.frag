@@ -2,7 +2,7 @@
 // Created by chaim on 24-09-30.
 //
 
-#version 460 core
+#version 430 core
 
 out vec4 Color;
 

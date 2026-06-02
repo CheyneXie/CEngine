@@ -8,7 +8,7 @@
 
 module;
 #include "imgui/imgui.h"
-export module CEngine.UI.EditorUI:FileBrowser;
+export module CEngine.EditorUI:FileBrowser;
 import :SceneTreeBrowser;
 import std;
 import CEngine.Logger;

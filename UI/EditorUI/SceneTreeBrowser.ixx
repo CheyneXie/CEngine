@@ -8,8 +8,7 @@
 
 module;
 #include "imgui/imgui.h"
-#include <vcruntime_typeinfo.h>
-export module CEngine.UI.EditorUI:SceneTreeBrowser;
+export module CEngine.EditorUI:SceneTreeBrowser;
 import std;
 import CEngine.Engine;
 import CEngine.Node;

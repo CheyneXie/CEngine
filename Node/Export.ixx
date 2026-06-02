@@ -1,5 +1,5 @@
 module;
-#include <vcruntime_typeinfo.h>
+#include <typeinfo>
 export module CEngine.Node;
 export import :Node;
 export import :Node3D;

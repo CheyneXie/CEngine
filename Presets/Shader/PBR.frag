@@ -2,7 +2,7 @@
 // Created by chaim on 24-10-14.
 //
 
-#version 460
+#version 430
 
 in vec3 Vertex_Position;
 in vec3 Vertex_Normal;

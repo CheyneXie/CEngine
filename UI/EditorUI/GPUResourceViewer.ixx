@@ -9,7 +9,7 @@
 module;
 #include "glad/glad.h"
 #include "imgui/imgui.h"
-export module CEngine.UI.EditorUI:GPUResourceViewer;
+export module CEngine.EditorUI:GPUResourceViewer;
 import std;
 import CEngine.Render;
 import CEngine.Utils;
@@ -121,8 +121,7 @@ namespace CEngine {
                         }
                         ImGui::SeparatorText("Preview");
                         auto id = SelectedTexture->getTextureID();
-                        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(SelectedTexture->getTextureID())),
-                                     ImVec2(SelectedTexture->getWidth(), SelectedTexture->getHeight()));
+                        ImGui::Image(static_cast<ImTextureID>(SelectedTexture->getTextureID()), ImVec2(SelectedTexture->getWidth(), SelectedTexture->getHeight()));
                     } else {
                         ImGui::Text("Please select a item.");
                     }

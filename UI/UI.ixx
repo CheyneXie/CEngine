@@ -7,7 +7,7 @@
  */
 
 module;
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -35,11 +35,11 @@ namespace CEngine {
             (void) io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
             // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-            io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/simhei.ttf", 13.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+            io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 13.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
             ImGui::StyleColorsDark();
             // ImGui::StyleColorsLight();
             ImGui_ImplGlfw_InitForOpenGL(Window, true);
-            ImGui_ImplOpenGL3_Init("#version 460");
+            ImGui_ImplOpenGL3_Init("#version 430");
         }
 
         /// 刷新显示UI（在Process中）

@@ -6,8 +6,9 @@ module;
 #include <assimp/matrix4x4.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <string.h>
 export module CEngine.Utils;
-import std.compat;
+import std;
 #ifdef _WIN32
 import CEngine.Utils.WindowsFileDialog;
 #endif

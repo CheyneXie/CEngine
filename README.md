@@ -1,32 +1,67 @@
 # CEngine
 
-基于OpenGL的3D引擎（未完成）
+基于 OpenGL 的 3D 引擎（未完成）
 
-C++
+### 依赖
+#### Windows
+- XMake
+- MSVC (Build Tools for Visual Studio)
+
+#### Linux
+```shell
+apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp-dev
+```
+
+### 运行示例
+**C++**
 ```c++
 import CEngine.Engine;
-import CEngine.UI.EditorUI;
+import CEngine.PresetsLoader;
+import CEngine.EditorUI;
+import CEngine.Node;
 
 int main(){
+    // 初始化引擎
     const auto engine = CEngine::Engine::GetIns();
+    // 创建窗口
     engine->NewWindow(1920, 1080, "title");
-    engine->LoadAllPresets();
+    // 加载内置资源
+    CEngine::PresetsLoader::LoadAll();
+    // 设置UI
     engine->setUI(new CEngine::EditorUI());
-    engine->AddFlyCamera3DWhenReady = true;
+    // 添加漫游相机
+    engine->Event_Ready += [&]() {
+        const auto camera = CEngine::Camera3D::Create();
+        camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("漫游相机"));
+        engine->getToolNode()->AddChild(camera);
+        camera->Active();
+    };
+    // 进入循环
     engine->Loop();
     return 0;
 }
 ```
-CMake
-```cmake
-cmake_minimum_required(VERSION 3.29)
-project(xxx)
-set(CMAKE_CXX_STANDARD 23)
-include(CEngine/CEngine.cmake)
-add_executable(xxx main.cpp)
-target_link_libraries(
-        xxx
-        Engine
-        EditorUI
-)
+**XMake**
+```lua
+set_languages("c++23")
+set_policy("build.c++.modules", true)
+
+-- Linux + Clang
+if is_plat("linux") then
+    set_toolchains("clang")
+    set_runtimes("c++_static")
+    add_ldflags("-static-libstdc++", {force = true})
+    add_syslinks("c++abi")
+    -- libc++-21 std.cppm chrono.inc 中的 operator""d / operator""y 会触发报错
+    add_cxflags("-Wno-reserved-user-defined-literal")
+end
+
+-- 引入 CEngine
+includes("CEngine")
+
+-- 主入口程序
+target("xxx")
+    set_kind("binary")
+    add_files("main.cpp")
+    add_deps("CEngine")
 ```
