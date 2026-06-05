@@ -24,6 +24,8 @@ namespace CEngine {
         glm::vec3 Position;
         /// @brief 法线
         glm::vec3 Normal;
+        /// @brief 切线
+        glm::vec4 Tangent;
         /// @brief 纹理坐标
         glm::vec2 TexCoord;
         /**
@@ -103,8 +105,10 @@ namespace CEngine {
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexInfo), reinterpret_cast<void *>(offsetof(VertexInfo, Normal)));
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexInfo), reinterpret_cast<void *>(offsetof(VertexInfo, TexCoord)));
+            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(VertexInfo), reinterpret_cast<void *>(offsetof(VertexInfo, Tangent)));
             glEnableVertexAttribArray(2);
+            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(VertexInfo), reinterpret_cast<void *>(offsetof(VertexInfo, TexCoord)));
+            glEnableVertexAttribArray(3);
             // 处理索引数据
             /// 生成EBO
             glGenBuffers(1, &EBO);

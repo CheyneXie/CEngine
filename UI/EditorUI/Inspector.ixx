@@ -162,23 +162,17 @@ namespace CEngine {
             if (ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SeparatorText("Parameters");
                 ImGui::Text("Emissive Intensity");
-                ImGui::DragFloat("Float##emissive_intensity", &material.Parameters.EMISSIVE_INTENSITY, 0.01f, 0.0f, FLT_MAX, "%.3f");
+                if (ImGui::DragFloat("Float##emissive_intensity", &material.Parameters.EMISSIVE_INTENSITY, 0.01f, 0.0f, FLT_MAX, "%.3f")) material.UpdateParameters();
                 ImGui::Text("Metallic");
-                ImGui::DragFloat("Float##metallic", &material.Parameters.METALLIC, 0.01f, 0.0f, 1.0f, "%.3f");
+                if (ImGui::DragFloat("Float##metallic", &material.Parameters.METALLIC, 0.01f, 0.0f, 1.0f, "%.3f")) material.UpdateParameters();
                 ImGui::Text("Roughness");
-                ImGui::DragFloat("Float##roughness", &material.Parameters.ROUGHNESS, 0.01f, 0.0f, 1.0f, "%.3f");
+                if (ImGui::DragFloat("Float##roughness", &material.Parameters.ROUGHNESS, 0.01f, 0.0f, 1.0f, "%.3f")) material.UpdateParameters();
                 ImGui::Text("Opacity");
-                ImGui::DragFloat("Float##opacity", &material.Parameters.OPACITY, 0.01f, 0.0f, 1.0f, "%.3f");
+                if (ImGui::DragFloat("Float##opacity", &material.Parameters.OPACITY, 0.01f, 0.0f, 1.0f, "%.3f")) material.UpdateParameters();
                 ImGui::Text("Diffuse Color");
-                ImGui::ColorEdit4("Color4##diffuseColor", &material.Parameters.DIFFUSE_COLOR.r);
-                ImGui::Text("Specular Color");
-                ImGui::ColorEdit4("Color4##specularColor", &material.Parameters.SPECULAR_COLOR.r);
+                if (ImGui::ColorEdit4("Color4##diffuseColor", &material.Parameters.DIFFUSE_COLOR.r)) material.UpdateParameters();
                 ImGui::Text("Emission Color");
-                ImGui::ColorEdit4("Color4##emissionColor", &material.Parameters.EMISSION_COLOR.r);
-                ImGui::Text("Reflective Color");
-                ImGui::ColorEdit4("Color4##reflectiveColor", &material.Parameters.REFLECTIVE_COLOR.r);
-                ImGui::Text("Transparent Color");
-                ImGui::ColorEdit4("Color4##transparentColor", &material.Parameters.TRANSPARENT_COLOR.r);
+                if (ImGui::ColorEdit4("Color4##emissionColor", &material.Parameters.EMISSION_COLOR.r)) material.UpdateParameters();
                 ImGui::SeparatorText("Textures");
                 for (auto &[type, value]: material.Textures) {
                     if (value.first == nullptr) continue;

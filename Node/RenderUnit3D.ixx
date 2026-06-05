@@ -25,21 +25,31 @@ namespace CEngine {
             return "RenderUnit3D";
         }
 
-        static RenderUnit3D *Create(Mesh *m, ShaderProgram *s) {
-            return new RenderUnit3D(m, s);
+        static RenderUnit3D *Create(Mesh *m, std::string shader_program_name) {
+            return new RenderUnit3D(m, shader_program_name);
         }
 
-        /**
-         * 执行渲染
-         */
-        virtual void Render(const glm::mat4 &viewM, const glm::mat4 &projectM) {
+        void PreRender(const glm::mat4 &viewM, const glm::mat4 &projectM) {
             shader_program->Use();
-            shader_program->SetUniform(0, projectM * (GetWorldMatrix() * viewM));
+            shader_program->SetUniform(0, GetWorldMatrix());
+            shader_program->SetUniform(1, viewM);
+            shader_program->SetUniform(2, projectM);
+        }
+
+        void DoRender() {
             if (!uniforms.empty())
                 for (auto [name, value]: uniforms) {
                     shader_program->SetShaderUniformVar(name.c_str(), value);
                 }
             mesh->Render();
+        }
+
+        /**
+         * 执行渲染
+         */
+        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            PreRender(viewM, projectM);
+            DoRender();
         }
 
         /**
@@ -64,10 +74,13 @@ namespace CEngine {
         std::unordered_map<std::string, ShaderUniformVar> &getUniforms() { return uniforms; }
 
     protected:
-        RenderUnit3D(Mesh *m, ShaderProgram *s) : mesh(m), shader_program(s) {
+        RenderUnit3D(Mesh *m, std::string shader_program_name) : mesh(m), shader_program_name(shader_program_name) {
+            shader_program = ShaderProgram::All_Instances[shader_program_name];
+            ShaderManager::Event_ReloadShader += [this]() { this->shader_program = ShaderProgram::All_Instances[this->shader_program_name]; };
         }
 
         Mesh *mesh;
+        std::string shader_program_name;
         ShaderProgram *shader_program;
         std::unordered_map<std::string, ShaderUniformVar> uniforms;
     };

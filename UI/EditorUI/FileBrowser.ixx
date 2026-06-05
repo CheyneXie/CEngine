@@ -77,9 +77,9 @@ namespace CEngine {
                 ImGui::Selectable(std::format("   {}", node->name).c_str());
                 // 展示右键菜单
                 if (ImGui::BeginPopupContextItem(node->name.c_str())) {
-                    for (auto &[name, shader]: ShaderProgram::All_Instances) {
+                    for (const auto& name: (ShaderProgram::All_Instances | std::views::keys)) {
                         if (ImGui::MenuItem(std::format("Open With Shader \"{}\"", name).c_str())) {
-                            if (const auto model = ModelImporter::import_model(node->path.string().c_str(), shader); model->IsValid()) {
+                            if (const auto model = ModelImporter::import_model(node->path.string().c_str(), name); model->IsValid()) {
                                 if (scene_tree_browser.NodeSelected != nullptr)
                                     scene_tree_browser.NodeSelected->AddChild(model);
                                 else

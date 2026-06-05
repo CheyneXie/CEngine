@@ -45,15 +45,17 @@ namespace CEngine {
         explicit ShaderUniformVar(const T &value) {
             if constexpr (std::is_same_v<T, ShaderUniformVar::Type>) {
                 mType = value;
-                // 这里需要给不同类型的Value设置默认值
-                if (mType == Type::INT || mType == Type::UINT || mType == Type::FLOAT || mType == Type::DOUBLE)
-                    Value = 0;
-                else if (mType == Type::VEC2) Value = glm::vec2(0);
-                else if (mType == Type::VEC3) Value = glm::vec3(0);
-                else if (mType == Type::VEC4) Value = glm::vec4(0);
-                else if (mType == Type::MAT3) Value = glm::mat3(0);
-                else if (mType == Type::MAT4) Value = glm::mat4(0);
-                else if (mType == Type::SAMPLER2D) Value = static_cast<Texture *>(nullptr);
+                // 默认值时 variant 类型必须与 mType 一致，否则 GetValue<T>() 会崩
+                if (mType == Type::INT)                        Value = 0;
+                else if (mType == Type::UINT)                  Value = 0u;
+                else if (mType == Type::FLOAT)                 Value = 0.0f;
+                else if (mType == Type::DOUBLE)                Value = 0.0;
+                else if (mType == Type::VEC2)                  Value = glm::vec2(0);
+                else if (mType == Type::VEC3)                  Value = glm::vec3(0);
+                else if (mType == Type::VEC4)                  Value = glm::vec4(0);
+                else if (mType == Type::MAT3)                  Value = glm::mat3(0);
+                else if (mType == Type::MAT4)                  Value = glm::mat4(0);
+                else if (mType == Type::SAMPLER2D)             Value = static_cast<Texture *>(nullptr);
             } else {
                 if constexpr (std::is_same_v<T, int>) mType = Type::INT;
                 else if constexpr (std::is_same_v<T, unsigned int>) mType = Type::UINT;

@@ -3,6 +3,7 @@ module;
 export module CEngine.Render;
 export import :GLSL;
 export import :ShaderProgram;
+export import :ShaderManager;
 export import :Mesh;
 export import :Material;
 export import :Texture;

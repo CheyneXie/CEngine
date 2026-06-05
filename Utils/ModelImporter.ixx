@@ -21,8 +21,7 @@ import CEngine.Utils;
 namespace CEngine::ModelImporter {
     auto TAG = "ModelImporter";
 
-    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, ShaderProgram *shader_program, const char *model_path,
-                      const float transform_scale = 1.0f) {
+    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, const char *model_path, std::string shader_program_name, const float transform_scale = 1.0f) {
         auto n3d = Node3D::Create();
         n3d->setName(node->mName.data);
         if (transform_scale == 1.0f)
@@ -35,8 +34,19 @@ namespace CEngine::ModelImporter {
             std::vector<unsigned int> indices;
             for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
                 VertexInfo vertex;
+                // 位置
                 vertex.Position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
+                // 法线
                 vertex.Normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z};
+                // 切线
+                glm::vec3 tangent = {mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z};
+                // 副切线
+                glm::vec3 bitangent = {mesh->mBitangents[j].x, mesh->mBitangents[j].y, mesh->mBitangents[j].z};
+                // 计算手性
+                float handedness = glm::dot(glm::cross(vertex.Normal, tangent), bitangent) < 0.0f ? -1.0f : 1.0f;
+                // 切线 + 手性
+                vertex.Tangent = {tangent.x, tangent.y, tangent.z, handedness};
+                // UV
                 if (mesh->mTextureCoords[0])
                     vertex.TexCoord = {mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y};
                 else
@@ -51,36 +61,36 @@ namespace CEngine::ModelImporter {
             const auto m = Mesh::Create(vertices, indices);
             m->Name = mesh->mName.data;
             LogS(TAG) << "导入网格: " << m->Name;
-            if (shader_program == nullptr || shader_program == ShaderProgram::All_Instances["Base"]) {
-                const auto ru3d = RenderUnit3D::Create(m, ShaderProgram::All_Instances["Base"]);
-                n3d->AddChild(ru3d);
-            } else {
-                const auto pbr3d = PBR3D::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path), shader_program);
+            if (shader_program_name == "PBR") {
+                const auto pbr3d = PBR3D::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path));
                 n3d->AddChild(pbr3d);
+            } else {
+                const auto ru3d = RenderUnit3D::Create(m, shader_program_name);
+                n3d->AddChild(ru3d);
             }
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            process_node(node->mChildren[i], scene, n3d, shader_program, model_path);
+            process_node(node->mChildren[i], scene, n3d, model_path, shader_program_name);
         }
         parent->AddChild(std::move(n3d));
     }
 
-    export Node3D *import_model(const char *file_path, ShaderProgram *shader_program = nullptr, float transform_scale = 1.0f) {
-        if (!std::filesystem::exists(file_path)) {
+    export Node3D *import_model(const char *file_path, std::string shader_program_name = "Base", float transform_scale = 1.0f) {
+        if (!Utils::FileExists(file_path)) {
             LogE(TAG) << "文件不存在: " << file_path;
             return nullptr;
         }
         LogI(TAG) << "开始导入模型: " << file_path;
         if (Utils::c_str_ends_with(file_path, ".fbx")) transform_scale = 0.1f;
         Assimp::Importer importer;
-        const aiScene *scene = importer.ReadFile(file_path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+        const aiScene *scene = importer.ReadFile(file_path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
         if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             LogE(TAG) << importer.GetErrorString();
             return nullptr;
         }
         const auto node = Node3D::Create();
         node->setName(scene->mName.data);
-        process_node(scene->mRootNode, scene, node, shader_program, file_path, transform_scale);
+        process_node(scene->mRootNode, scene, node, file_path, shader_program_name, transform_scale);
         return node;
     }
 }

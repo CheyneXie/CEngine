@@ -91,6 +91,26 @@ namespace CEngine::Utils {
         return std::filesystem::exists(path) && std::filesystem::is_regular_file(path);
     }
 
+    export bool DirectoryExists(const char *path) {
+        return std::filesystem::exists(path) && std::filesystem::is_directory(path);
+    }
+
+    export std::string GetFileDir(const char *file_path) {
+        std::filesystem::path p(file_path);
+        std::filesystem::path parent = p.parent_path();
+        if (parent.empty()) {
+            return "";  // 没有目录部分（如 "file.txt"）
+        }
+        return parent.string().append(1, std::filesystem::path::preferred_separator); // 末尾加分隔符
+    }
+
+    export std::string GetFileName(const char *file_path, bool only_stem = false) {
+        if (only_stem)
+            return std::filesystem::path(file_path).stem().string();
+        else
+            return std::filesystem::path(file_path).filename().string();
+    }
+
     export void vec3_to_float3(const glm::vec3 &in, float *out) {
         out[0] = in.x;
         out[1] = in.y;

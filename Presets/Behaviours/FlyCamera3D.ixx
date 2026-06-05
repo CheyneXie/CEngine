@@ -49,11 +49,11 @@ namespace CEngine {
                 p3d->SetPosition(p3d->GetPosition() + p3d->GetRight() * delta * speed);
             }
 
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-                p3d->SetPosition(p3d->GetPosition() - p3d->GetUp() * delta * speed);
-            }
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
                 p3d->SetPosition(p3d->GetPosition() + p3d->GetUp() * delta * speed);
+            }
+            if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+                p3d->SetPosition(p3d->GetPosition() - p3d->GetUp() * delta * speed);
             }
 
             if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -67,6 +67,8 @@ namespace CEngine {
                     rotation->Yaw += delta_x;
                     rotation->Pitch = std::clamp(rotation->Pitch + delta_y, -glm::pi<float>() / 2.0f, glm::pi<float>() / 2.0f);
                     p3d->UpdateModelMatrix();
+                    // LogD("Camera") << rotation->Yaw << ", " << rotation->Pitch;
+                    // LogD("Camera") << "正交检查: " << dot(p3d->GetForward(), p3d->GetRight()) << ", " << dot(p3d->GetForward(), p3d->GetUp()) << ", " << dot(p3d->GetRight(), p3d->GetUp());
                 }
                 last_x = x;
                 last_y = y;
@@ -78,7 +80,7 @@ namespace CEngine {
     private:
         Camera3D *p3d = nullptr;
         float speed = 0.01f;
-        float sensitivity = 0.005f;
+        float sensitivity = 0.001f;
         double last_x = 0, last_y = 0;
     };
 

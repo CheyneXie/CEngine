@@ -42,6 +42,7 @@ target("CEngine")
     add_files("Node/Behaviour/*.ixx", {public = true})
     add_files("Utils/*.ixx", {public = true})
     add_files("UI/*.ixx", {public = true})
+    add_files("UI/EditorUI/EditorUI.ixx", {public = true}) -- 排序有问题，主模块前置
     add_files("UI/EditorUI/*.ixx", {public = true})
     add_files("Presets/**.ixx", {public = true})
 

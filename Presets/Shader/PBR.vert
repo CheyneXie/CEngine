@@ -1,56 +1,38 @@
 //
-// Created by chaim on 24-10-14.
+// Created by Cheyne Xie on 24-10-14.
+// Updated by Cheyne Xie on 26-06-05.
 //
 
-#version 430
+#version 430 core
 
-layout (location = 0) in vec3 Position;
-layout (location = 1) in vec3 Normal;
-layout (location = 2) in vec2 TexCoord;
+layout(location = 0) in vec3 InPosition;
+layout(location = 1) in vec3 InNormal;
+layout(location = 2) in vec4 InTangent;
+layout(location = 3) in vec2 InUV;
 
-layout (location = 0) uniform mat4 Transform;
+layout(location = 0) uniform mat4 Model;
+layout(location = 1) uniform mat4 View;
+layout(location = 2) uniform mat4 Projection;
 
-uniform sampler2D Tex_Diffuse;
-uniform sampler2D Tex_Specular;
-uniform sampler2D Tex_Ambient;
-uniform sampler2D Tex_Emissive;
-uniform sampler2D Tex_Height;
-uniform sampler2D Tex_Normals;
-uniform sampler2D Tex_Shininess;
-uniform sampler2D Tex_Opacity;
-uniform sampler2D Tex_Displacement;
-uniform sampler2D Tex_Lightmap;
-uniform sampler2D Tex_Reflection;
-uniform sampler2D Tex_BaseColor;
-uniform sampler2D Tex_NormalCamera;
-uniform sampler2D Tex_EmissionColor;
-uniform sampler2D Tex_Metalness;
-uniform sampler2D Tex_DiffuseRoughness;
-uniform sampler2D Tex_AmbientOcclusion;
-uniform sampler2D Tex_Sheen;
-uniform sampler2D Tex_Clearcoat;
-uniform sampler2D Tex_Transmission;
-
-layout (std140) uniform Material_Parameters
+out VS_OUT
 {
-    float Emissive_Intensity;
-    float Metallic;
-    float Roughness;
-    float Opacity;
-    vec4 Diffuse_Color;
-    vec4 Specular_Color;
-    vec4 Emission_Color;
-    vec4 Reflective_Color;
-    vec4 Transparent_Color;
-};
+    vec3 WorldPosition;
+    vec2 UV;
+    mat3 TBN;
+} VSOut;
 
-out vec3 Vertex_Position;
-out vec3 Vertex_Normal;
-out vec2 UV;
+void main()
+{
+    vec3 T = normalize(mat3(Model) * InTangent.xyz);
+    vec3 N = normalize(mat3(Model) * InNormal);
+    vec3 B = normalize(cross(N, T) * InTangent.w);
 
-void main() {
-    gl_Position = Transform * vec4(Position, 1.0);
-    Vertex_Position = Position;
-    Vertex_Normal = Normal;
-    UV = TexCoord;
+    VSOut.TBN = mat3(T, B, N);
+
+    vec4 WorldPosition = Model * vec4(InPosition, 1.0);
+
+    VSOut.WorldPosition = WorldPosition.xyz;
+    VSOut.UV = InUV;
+
+    gl_Position = Projection * View * WorldPosition;
 }

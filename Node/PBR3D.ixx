@@ -19,19 +19,16 @@ namespace CEngine {
             return "PBR3D";
         }
 
-        static PBR3D *Create(Mesh *m, Material &&mat, ShaderProgram *shader = nullptr) {
-            return new PBR3D(m, std::move(mat), shader);
+        static PBR3D *Create(Mesh *m, Material &&mat) {
+            return new PBR3D(m, std::move(mat));
         }
 
-        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM) override {
-            shader_program->Use();
-            shader_program->SetUniform(0, projectM * (GetWorldMatrix() * viewM));
+        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+            RenderUnit3D::PreRender(viewM, projectM);
+            shader_program->SetUniform("CameraPosition", camPos);
+            // TODO Light
             Mat.Use(shader_program);
-            if (!uniforms.empty())
-                for (auto [name, value]: uniforms) {
-                    shader_program->SetShaderUniformVar(name.c_str(), value);
-                }
-            mesh->Render();
+            RenderUnit3D::DoRender();
         }
 
         Material &getMaterial() {
@@ -39,8 +36,7 @@ namespace CEngine {
         }
 
     protected:
-        PBR3D(Mesh *m, Material &&mat, ShaderProgram *shader) : RenderUnit3D(m, shader == nullptr ? ShaderProgram::All_Instances["PBR"] : shader),
-                                                                Mat(std::move(mat)) {
+        PBR3D(Mesh *m, Material &&mat) : RenderUnit3D(m, "PBR"), Mat(std::move(mat)) {
         }
 
         Material Mat;

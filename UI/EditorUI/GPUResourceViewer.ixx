@@ -30,6 +30,9 @@ namespace CEngine {
             if (ImGui::BeginTabBar("##tabs#GPUResourceViewer")) {
                 if (ImGui::BeginTabItem("Shader Program")) {
                     ImGui::BeginChild("##ShaderProgram#List", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, 0), ImGuiWindowFlags_NoResize);
+                    if (ImGui::Button("Reload All Shader", ImVec2(-FLT_MIN, 0))) {
+                        ShaderManager::LoadShaderProgram();
+                    }
                     if (ImGui::BeginListBox("##ShaderProgram#ListBox", ImVec2(-FLT_MIN, -FLT_MIN))) {
                         for (auto &[name, shader]: ShaderProgram::All_Instances)
                             if (ImGui::Selectable(name.c_str(), shader == SelectedShaderProgram))

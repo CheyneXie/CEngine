@@ -29,10 +29,15 @@ namespace CEngine {
             CurrentTextureSlot = 0;
         }
 
-        static Texture *Create(const ImageBuffer &img) {
-            // 计算MD5
-            const auto _md5 = md5::digestString(img.GetBuffer(), img.GetHeight() * img.GetWidth());
-            if (All_Instances.contains(_md5)) return All_Instances[_md5];
+        static Texture *Create(std::string name, const ImageBuffer &img) {
+            // 非法路径字符作为引擎内置纹理的标识符
+            if (!name.contains("<") & !name.contains(">")) {
+                // 计算MD5
+                const auto _md5 = md5::digestString(img.GetBuffer(), img.GetHeight() * img.GetWidth());
+                // 非内置纹理添加MD5防撞
+                name += "#" + _md5;
+            }
+            if (All_Instances.contains(name)) return All_Instances[name];
             // 上传GPU
             unsigned int id = 0;
             glGenTextures(1, &id);
@@ -67,8 +72,8 @@ namespace CEngine {
             glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, static_cast<GLsizei>(img.GetWidth()), static_cast<GLsizei>(img.GetHeight()), 0, dataFormat,
                          GL_UNSIGNED_BYTE, img.GetBuffer());
             glBindTexture(GL_TEXTURE_2D, 0);
-            auto tex = new Texture(id, _md5, internalFormat, dataFormat, img.GetWidth(), img.GetHeight());
-            All_Instances.emplace(_md5, tex);
+            auto tex = new Texture(id, name, internalFormat, dataFormat, img.GetWidth(), img.GetHeight());
+            All_Instances.emplace(name, tex);
             return tex;
         }
 
@@ -78,11 +83,11 @@ namespace CEngine {
                 return nullptr;
             }
             const auto img = ImageBuffer(img_path);
-            return Create(img);
+            return Create(Utils::GetFileName(img_path, true), img);
         }
 
-        Texture(const unsigned int id, std::string _md5, const int internal_format, const int data_format, const unsigned int width, const unsigned int height)
-            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Md5(std::move(_md5)) {
+        Texture(const unsigned int id, std::string name, const int internal_format, const int data_format, const unsigned int width, const unsigned int height)
+            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Md5(std::move(name)) {
         }
 
         Texture(const Texture &) = delete;

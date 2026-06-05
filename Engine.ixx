@@ -109,6 +109,7 @@ namespace CEngine {
         Node3D *ToolNode = Node3D::Create();
         /// 相机
         Camera *CurrentCamera;
+        Camera3D *CurrentCamera3D;
 
         /**
         * 当引擎准备就绪时
@@ -199,16 +200,21 @@ namespace CEngine {
             LogI(TAG) << "设置Viewport: " << _width << "x" << _height;
             GetIns()->Event_WindowResized.Invoke(_window, _width, _height);
         });
+        // 背面剔除
+        glEnable(GL_CULL_FACE);
+        // 深度测试
+        glEnable(GL_DEPTH_TEST);
         // 打印最大Uniform数量
         GLint maxUniformLocations;
         glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &maxUniformLocations);
         LogI(TAG) << "当前设备最大Uniform数量: " << maxUniformLocations;
-        // 背面剔除
-        glEnable(GL_CULL_FACE);
+        // 编译着色器
+        ShaderManager::LoadShaderProgram();
         // 订阅Camera激活事件
         Camera::Event_CameraActivated += [&](Camera *cam) {
             LogI(TAG) << "活动相机变更";
             this->CurrentCamera = cam;
+            this->CurrentCamera3D = dynamic_cast<Camera3D *>(cam);
         };
         // 触发Event
         Event_Ready.Invoke();
@@ -219,10 +225,8 @@ namespace CEngine {
         const double time = glfwGetTime();
         // 设置清空颜色
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        // 清空颜色缓冲区
-        glClear(GL_COLOR_BUFFER_BIT);
-        // 清空深度缓冲区
-        glClear(GL_DEPTH_BUFFER_BIT);
+        // 清空颜色缓冲区 | 深度缓冲区
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // 重置纹理槽
         Texture::ResetTextureSlot();
         // 获得视图矩阵和透视矩阵
@@ -247,7 +251,10 @@ namespace CEngine {
             if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)
                 behaviour->Process(DeltaTime);
             if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr) {
-                ru3d->Render(viewM, projectM);
+                if (const auto pbr3d = dynamic_cast<PBR3D *>(ru3d); pbr3d != nullptr)
+                    pbr3d->Render(viewM, projectM, CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero);
+                else
+                    ru3d->Render(viewM, projectM);
                 DrawCallEnd();
             }
         }
