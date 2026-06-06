@@ -28,6 +28,7 @@ namespace CEngine {
 
         static void LoadBehaviours() {
             BehaviourFactory::Register<FlyCamera3D>();
+            BehaviourFactory::Register<Rotator3D>();
         }
 
         static void LoadTextures() {

@@ -4,7 +4,7 @@
 
 ### 依赖
 #### Windows
-- XMake
+- XMake / CMake
 - MSVC (Build Tools for Visual Studio)
 
 #### Linux
@@ -13,7 +13,7 @@ apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp
 ```
 
 ### 运行示例
-**C++**
+#### C++
 ```c++
 import CEngine.Engine;
 import CEngine.PresetsLoader;
@@ -32,7 +32,7 @@ int main(){
     // 添加漫游相机
     engine->Event_Ready += [&]() {
         const auto camera = CEngine::Camera3D::Create();
-        camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("漫游相机"));
+        camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("Fly Camera"));
         engine->getToolNode()->AddChild(camera);
         camera->Active();
     };
@@ -41,7 +41,7 @@ int main(){
     return 0;
 }
 ```
-**XMake**
+#### XMake
 ```lua
 set_languages("c++23")
 set_policy("build.c++.modules", true)
@@ -56,12 +56,28 @@ if is_plat("linux") then
     add_cxflags("-Wno-reserved-user-defined-literal")
 end
 
--- 引入 CEngine
 includes("CEngine")
 
--- 主入口程序
 target("xxx")
     set_kind("binary")
     add_files("main.cpp")
     add_deps("CEngine")
+```
+
+#### CMake
+仅支持 Windows
+```cmake
+cmake_minimum_required(VERSION 3.28)
+
+project(XXX C CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_subdirectory(CEngine)
+add_executable(XXX main.cpp)
+target_link_libraries(XXX PRIVATE CEngine)
+
+target_deploy_cengine_assets(XXX)
 ```

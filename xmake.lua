@@ -43,7 +43,10 @@ target("CEngine")
     add_files("Utils/*.ixx", {public = true})
     add_files("UI/*.ixx", {public = true})
     add_files("UI/EditorUI/EditorUI.ixx", {public = true}) -- 排序有问题，主模块前置
-    add_files("UI/EditorUI/*.ixx", {public = true})
+    add_files("UI/EditorUI/Inspector.ixx", {public = true})
+    add_files("UI/EditorUI/GPUResourceViewer.ixx", {public = true})
+    add_files("UI/EditorUI/SceneTreeBrowser.ixx", {public = true})
+    add_files("UI/EditorUI/FileBrowser.ixx", {public = true})
     add_files("Presets/**.ixx", {public = true})
 
     add_deps("glad", "imgui")

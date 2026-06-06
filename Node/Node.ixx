@@ -139,6 +139,9 @@ namespace CEngine {
         /// @file Export.ixx
         void PrintChildrenTree(Logger::LogLevel ll = Logger::LogLevel::D);
 
+        /// @property Parent
+        Node *getParent() const { return Parent; }
+
         /// @property Name
         std::string getName() const { return Name; }
 
@@ -162,16 +165,22 @@ namespace CEngine {
             }
         }
 
-        /// @property Parent
-        Node *getParent() const { return Parent; }
-
         /// @property Behaviour
         Behaviour *GetBehaviour() const { return Behaviour; }
 
+        /// @property Behaviour
         void SetBehaviour(Behaviour *behaviour) {
+            if (Behaviour != nullptr) delete Behaviour;
             Behaviour = behaviour;
+            if (Behaviour == nullptr) return;
             Behaviour->SetParentNode(this);
         }
+
+        /// @property 是否激活
+        bool IsActive() const { return Actived; }
+
+        /// @property 设置激活
+        void SetActive(bool active) { Actived = active; }
 
     protected:
         Node() {
@@ -184,8 +193,10 @@ namespace CEngine {
         Node *Parent = nullptr;
         /// @brief 所有子级
         std::unordered_map<std::string, Node *> Children;
-        ///
+        /// @brief Behaviour
         Behaviour *Behaviour = nullptr;
+        /// @brief 是否激活
+        bool Actived = true;
     };
 
     const char *Node::TAG = "Node";

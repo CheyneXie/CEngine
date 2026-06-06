@@ -248,7 +248,7 @@ namespace CEngine {
             if (node->GetChildCount() > 0)
                 for (const auto child: node->GetChildren())
                     stack.push(child);
-            if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)
+            if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr && behaviour->IsValid())
                 behaviour->Process(DeltaTime);
             if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr) {
                 if (const auto pbr3d = dynamic_cast<PBR3D *>(ru3d); pbr3d != nullptr)

@@ -8,21 +8,23 @@
 
 export module CEngine.Node:Behaviour;
 import CEngine.Base;
+import CEngine.Logger;
 
 namespace CEngine {
     export class Node;
 
     export class Behaviour : public Object {
     public:
-        Behaviour() = default;
+        Behaviour(const char *name) : Name(name) {
+        }
         ~Behaviour() override = default;
 
         void Process(const double DeltaTime) {
-            if (!ReadyCalled) Ready();
+            if (!ReadyCalled) if (!Ready()) return;
             Update(DeltaTime);
         }
 
-        virtual void Ready() = 0;
+        virtual bool Ready() = 0;
 
         virtual void Update(double DeltaTime) = 0;
 
@@ -31,9 +33,11 @@ namespace CEngine {
 
         void SetParentNode(Node *node) { ParentNode = node; }
         Node *GetParentNode() const { return ParentNode; }
+        std::string GetName() { return Name; }
 
     protected:
         Node *ParentNode;
+        std::string Name;
 
     private:
         bool ReadyCalled = false;

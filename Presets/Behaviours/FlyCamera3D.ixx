@@ -20,15 +20,15 @@ namespace CEngine {
     public:
         const static char *Name;
 
-        FlyCamera3D() = default;
+        using Behaviour::Behaviour;
 
-        void Ready() override {
+        bool Ready() override {
             p3d = dynamic_cast<Camera3D *>(ParentNode);
             if (p3d == nullptr) {
                 ParentNode->SetBehaviour(nullptr);
-                delete this;
-                return;
+                return false;
             }
+            return true;
         }
 
         void Update(const double DeltaTime) override {
@@ -84,5 +84,5 @@ namespace CEngine {
         double last_x = 0, last_y = 0;
     };
 
-    const char *FlyCamera3D::Name = "漫游相机";
+    const char *FlyCamera3D::Name = "Fly Camera";
 }

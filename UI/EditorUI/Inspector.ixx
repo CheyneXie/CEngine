@@ -22,17 +22,39 @@ import CEngine.Render;
 namespace CEngine {
     void ProcessNode(Node *node) {
         if (ImGui::CollapsingHeader("Node", ImGuiTreeNodeFlags_DefaultOpen)) {
+            bool active = node->IsActive();
+            if (ImGui::Checkbox("Active", &active)) {
+                node->SetActive(active);
+            }
             if (ImGui::TreeNodeEx("Info", ImGuiTreeNodeFlags_DefaultOpen)) {
+                
                 ImGui::BeginDisabled();
                 ImGui::InputText("Type", const_cast<char *>(node->GetTypeName()), 16, ImGuiInputTextFlags_ReadOnly);
                 ImGui::EndDisabled();
-                ImGui::Separator();
                 char Name[128];
                 const auto name_str = node->getName();
                 name_str.copy(Name, name_str.length());
                 Name[name_str.length()] = '\0';
                 if (ImGui::InputText("Name", Name, IM_ARRAYSIZE(Name), ImGuiInputTextFlags_EnterReturnsTrue))
                     node->setName(Name);
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNodeEx("Behaviour", ImGuiTreeNodeFlags_DefaultOpen)) {
+                Behaviour* behaviour = node->GetBehaviour();
+                std::string currentName = behaviour ? behaviour->GetName() : "None";
+                if (ImGui::BeginCombo("Behaviour", currentName.c_str())) {
+                    if (ImGui::Selectable("None", behaviour == nullptr)) {
+                        node->SetBehaviour(nullptr);
+                    }
+                    for (const auto& name : BehaviourFactory::GetAllBehavioursName()) {
+                        bool isSelected = (name == currentName);
+                        if (ImGui::Selectable(name.c_str(), isSelected)) {
+                            node->SetBehaviour(BehaviourFactory::CreateBehaviour(name));
+                        }
+                        if (isSelected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
                 ImGui::TreePop();
             }
         }
@@ -123,7 +145,7 @@ namespace CEngine {
                         }
                         // 为了时索引为0时输出NULL，所有变量偏移1
                         if (ImGui::Combo("sampler2D", &v, [](void *data, const int idx)-> const char *{
-                            if (idx == 0) return "NULL";
+                            if (idx == 0) return "None";
                             return std::next(Texture::All_Instances.cbegin(), idx - 1)->first.c_str();
                         }, nullptr, Texture::All_Instances.size() + 1)) {
                             if (v >= 1)
@@ -140,7 +162,7 @@ namespace CEngine {
                 if (ImGui::Combo("Add Override", &v, [](void *data, const int idx)-> const char *{
                     if (idx == 0) return "Add Override";
                     const auto it_ptr = static_cast<std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator *>(data);
-                    if (it_ptr == nullptr) return "NULL";
+                    if (it_ptr == nullptr) return "None";
                     return std::next(std::forward<std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator>(*it_ptr),
                                      idx - 1)->second.c_str();
                 }, &it, ru3d->getShaderProgram()->getUniformsList().size() + 1)) {
