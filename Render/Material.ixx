@@ -32,8 +32,13 @@ namespace CEngine {
                 if (material->GetTextureCount(key) > 0) {
                     aiString tex_path;
                     material->GetTexture(key, 0, &tex_path);
-                    if (tex_path.length > 0)
-                        value.first = Texture::FromFile(std::format("{}{}", file_dir, tex_path.data).c_str());
+                    if (tex_path.length > 0) {
+                        auto _p = std::string(tex_path.data);
+                        #ifndef _WIN32
+                        std::replace(_p.begin(), _p.end(), '\\', '/'); // 避免模型的纹理路径用的是Windows的路径间隔符
+                        #endif
+                        value.first = Texture::FromFile(std::format("{}{}", file_dir, _p).c_str());
+                    }
                 }
             }
             // 读取参数

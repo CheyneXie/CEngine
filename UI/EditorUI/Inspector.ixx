@@ -95,7 +95,7 @@ namespace CEngine {
             if (ImGui::TreeNodeEx("Shader Uniforms Override", ImGuiTreeNodeFlags_DefaultOpen)) {
                 for (auto &[name,suv]: ru3d->getUniforms()) {
                     const auto type = suv.GetType();
-                    ImGui::BulletText(name.c_str());
+                    ImGui::BulletText("%s", name.c_str());
                     ImGui::PushID(name.c_str());
                     if (type == ShaderUniformVar::Type::INT) {
                         auto v = suv.GetValue<int>();

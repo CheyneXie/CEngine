@@ -50,9 +50,9 @@ namespace CEngine {
                             ImGui::TableHeadersRow();
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
-                            ImGui::Text(SelectedShaderProgram->getName().c_str());
+                            ImGui::Text("%s", SelectedShaderProgram->getName().c_str());
                             ImGui::TableNextColumn();
-                            ImGui::Text(std::to_string(SelectedShaderProgram->getShaderProgramID()).c_str());
+                            ImGui::Text("%s", std::to_string(SelectedShaderProgram->getShaderProgramID()).c_str());
                             ImGui::EndTable();
                         }
                         ImGui::SeparatorText("Uniforms List");
@@ -63,9 +63,9 @@ namespace CEngine {
                             for (auto &[type, name]: SelectedShaderProgram->getUniformsList()) {
                                 ImGui::TableNextRow();
                                 ImGui::TableNextColumn();
-                                ImGui::Text(name.c_str());
+                                ImGui::Text("%s", name.c_str());
                                 ImGui::TableNextColumn();
-                                ImGui::Text(ShaderUniformVar::TypeToString(type));
+                                ImGui::Text("%s", ShaderUniformVar::TypeToString(type));
                             }
                             ImGui::EndTable();
                         }
@@ -99,22 +99,22 @@ namespace CEngine {
                             ImGui::TableNextColumn();
                             ImGui::Text("MD5");
                             ImGui::TableNextColumn();
-                            ImGui::Text(SelectedTexture->getMd5().c_str());
+                            ImGui::Text("%s", SelectedTexture->getMd5().c_str());
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
                             ImGui::Text("Texture ID");
                             ImGui::TableNextColumn();
-                            ImGui::Text(std::to_string(SelectedTexture->getTextureID()).c_str());
+                            ImGui::Text("%s", std::to_string(SelectedTexture->getTextureID()).c_str());
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
                             ImGui::Text("Data Format");
                             ImGui::TableNextColumn();
-                            ImGui::Text(GetOpenGLTextureFormatName(SelectedTexture->getDataFormat()));
+                            ImGui::Text("%s", GetOpenGLTextureFormatName(SelectedTexture->getDataFormat()));
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
                             ImGui::Text("Internal Format");
                             ImGui::TableNextColumn();
-                            ImGui::Text(GetOpenGLTextureFormatName(SelectedTexture->getInternalFormat()));
+                            ImGui::Text("%s", GetOpenGLTextureFormatName(SelectedTexture->getInternalFormat()));
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
                             ImGui::Text("Size");
@@ -132,7 +132,7 @@ namespace CEngine {
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Mesh")) {
-                    ImGui::Text("Mesh count: %u", Mesh::All_Instances.size());
+                    ImGui::Text("Mesh count: %lu", Mesh::All_Instances.size());
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();

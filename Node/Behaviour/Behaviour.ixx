@@ -7,6 +7,7 @@
  */
 
 export module CEngine.Node:Behaviour;
+import std;
 import CEngine.Base;
 import CEngine.Logger;
 

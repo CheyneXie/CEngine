@@ -9,7 +9,7 @@
 module;
 #include <GLFW/glfw3.h>
 #include "imgui/imgui.h"
-export module CEngine.EditorUI;
+export module CEngine.EditorUI:EditorUI;
 import :FileBrowser;
 import :SceneTreeBrowser;
 import :Inspector;
