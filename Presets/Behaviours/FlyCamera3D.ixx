@@ -20,7 +20,16 @@ namespace CEngine {
     public:
         const static char *Name;
 
-        using Behaviour::Behaviour;
+        FlyCamera3D(const char *name) : Behaviour(name) {
+            RegisterParam<float>("Speed",
+                [this]() { return this->speed * 1000; },
+                [this](float v) { this->speed = abs(v * 0.001); }
+            );
+            RegisterParam<float>("Sensitivity",
+                [this]() { return this->sensitivity; },
+                [this](float v) { this->sensitivity = abs(v); }
+            );
+        }
 
         bool Ready() override {
             p3d = dynamic_cast<Camera3D *>(ParentNode);
@@ -61,15 +70,12 @@ namespace CEngine {
                 glfwGetCursorPos(window, &x, &y);
                 if (!(last_x == 0 && last_y == 0)) {
                     const auto [w, h] = Engine::GetIns()->GetScreenSize();
-                    const auto delta_x = static_cast<float>((x - last_x) * sensitivity);
-                    const auto delta_y = static_cast<float>((last_y - y) * sensitivity);
+                    const auto delta_x = static_cast<float>((x - last_x) / sensitivity);
+                    const auto delta_y = static_cast<float>((last_y - y) / sensitivity);
                     const auto rotation = p3d->GetRotationPtr();
                     rotation->Yaw += delta_x;
                     rotation->Pitch = std::clamp(rotation->Pitch + delta_y, -glm::pi<float>() / 2.0f, glm::pi<float>() / 2.0f);
-                    p3d->UpdateModelMatrix();
-                    // LogD("Camera") << rotation->Yaw << ", " << rotation->Pitch;
-                    // LogD("Camera") << "正交检查: " << dot(p3d->GetForward(), p3d->GetRight()) << ", " << dot(p3d->GetForward(), p3d->GetUp()) << ", " << dot(p3d->GetRight(), p3d->GetUp());
-                }
+                    p3d->UpdateModelMatrix();}
                 last_x = x;
                 last_y = y;
             } else {
@@ -80,7 +86,7 @@ namespace CEngine {
     private:
         Camera3D *p3d = nullptr;
         float speed = 0.01f;
-        float sensitivity = 0.001f;
+        float sensitivity = 1000.f;
         double last_x = 0, last_y = 0;
     };
 

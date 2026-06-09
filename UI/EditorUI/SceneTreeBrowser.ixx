@@ -44,7 +44,7 @@ namespace CEngine {
                         node_name = std::format("{}+ ({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
                     }
                 } else {
-                    node_name = std::format("{}({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
+                    node_name = std::format("{}  ({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
                 }
                 if (ImGui::Selectable(node_name.c_str(), node == NodeSelected)) {
                     if (node != NodeSelected)

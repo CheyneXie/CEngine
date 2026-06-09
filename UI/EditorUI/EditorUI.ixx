@@ -91,12 +91,11 @@ namespace CEngine {
                         show_gpu_resource_viewer = !show_gpu_resource_viewer;
                     if (ImGui::MenuItem("ImGui Demo Window", nullptr, show_demo_window))
                         show_demo_window = !show_demo_window;
-                    ImGui::MenuItem("Options");
-                    ImGui::MenuItem("Settings");
+                    // ImGui::MenuItem("Options");
+                    // ImGui::MenuItem("Settings");
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("More")) {
-                    ImGui::MenuItem("Help");
                     ImGui::MenuItem("About");
                     ImGui::EndMenu();
                 }
@@ -109,8 +108,8 @@ namespace CEngine {
                 ImGui::SetNextWindowSize(ImVec2(window_width * 0.15f, window_height - 20 - 30));
                 if (ImGui::Begin("Left Panel", nullptr, ImGuiWindowFlags_NoMove)) {
                     // 场景树
-                    if (ImGui::BeginChild("Scene Tree", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.5f), ImGuiChildFlags_None)) {
-                        if (ImGui::BeginTabBar("##tabs#Scene Tree")) {
+                    if (ImGui::BeginChild("Left Panel Top", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.5f), ImGuiChildFlags_None)) {
+                        if (ImGui::BeginTabBar("##tabs#Left Panel Top")) {
                             if (ImGui::BeginTabItem("Scene Tree")) {
                                 scene_tree_browser.DisplaySceneTreeBrowser();
                                 ImGui::EndTabItem();
@@ -121,8 +120,8 @@ namespace CEngine {
                     }
 
                     // 文件浏览器
-                    if (ImGui::BeginChild("File Browser", ImVec2(0, 0), ImGuiChildFlags_None)) {
-                        if (ImGui::BeginTabBar("##tabs#File Browser")) {
+                    if (ImGui::BeginChild("Left Panel Bottom", ImVec2(0, 0), ImGuiChildFlags_None)) {
+                        if (ImGui::BeginTabBar("##tabs#Left Panel Bottom")) {
                             if (ImGui::BeginTabItem("File Browser")) {
                                 file_browser.ShowDirectory(scene_tree_browser);
                                 ImGui::EndTabItem();
@@ -140,9 +139,13 @@ namespace CEngine {
                 ImGui::SetNextWindowPos(ImVec2(window_width * 0.8f, 20));
                 ImGui::SetNextWindowSize(ImVec2(window_width * 0.2f, window_height - 20 - 30));
                 if (ImGui::Begin("Right Panel", nullptr, ImGuiWindowFlags_NoMove)) {
-                    if (ImGui::BeginTabBar("##tabs#Inspector")) {
+                    if (ImGui::BeginTabBar("##tabs#Right Panel")) {
                         if (ImGui::BeginTabItem("Inspector")) {
                             DisplayInspector(scene_tree_browser);
+                            ImGui::EndTabItem();
+                        }
+                        if (ImGui::BeginTabItem("Env Settings")) {
+                            // DisplayInspector(scene_tree_browser);
                             ImGui::EndTabItem();
                         }
                         ImGui::EndTabBar();

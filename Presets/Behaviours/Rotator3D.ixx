@@ -19,7 +19,12 @@ namespace CEngine {
     public:
         const static char *Name;
 
-        using Behaviour::Behaviour;
+        Rotator3D(const char *name) : Behaviour(name) {
+            RegisterParam<float>("RotateSpeed",
+                [this]() { return this->RotateSpeed; },
+                [this](float v) { this->RotateSpeed = v; }
+            );
+        }
 
         bool Ready() override {
             p3d = dynamic_cast<Node3D *>(ParentNode);
@@ -32,12 +37,13 @@ namespace CEngine {
 
         void Update(const double DeltaTime) override {
             const auto rotation = p3d->GetRotationPtr();
-            rotation->Yaw += DeltaTime / 500;
+            rotation->Yaw += DeltaTime / 1000 * RotateSpeed;
             p3d->UpdateModelMatrix();
         }
 
     private:
         Node3D *p3d = nullptr;
+        float RotateSpeed = 1.0f;
     };
 
     const char *Rotator3D::Name = "Model Rotator";

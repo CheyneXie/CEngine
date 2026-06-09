@@ -33,7 +33,7 @@ int main(){
     engine->Event_Ready += [&]() {
         const auto camera = CEngine::Camera3D::Create();
         camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("Fly Camera"));
-        engine->getToolNode()->AddChild(camera);
+        engine->getRoot()->AddChild(camera);
         camera->Active();
     };
     // 进入循环

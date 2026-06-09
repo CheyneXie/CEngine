@@ -61,9 +61,6 @@ namespace CEngine {
         /// @property RootNode
         Node3D *getRoot() const { return RootNode; }
 
-        /// @property ToolNode
-        Node3D *getToolNode() const { return ToolNode; }
-
         /// @property window
         GLFWwindow *getWindow() const { return window; }
 
@@ -105,8 +102,6 @@ namespace CEngine {
         UI *ui;
         /// @brief 节点根目录
         Node3D *RootNode = Node3D::Create();
-        /// 工具节点
-        Node3D *ToolNode = Node3D::Create();
         /// 相机
         Camera *CurrentCamera;
         Camera3D *CurrentCamera3D;
@@ -137,7 +132,6 @@ namespace CEngine {
         glfwWindowHint(GLFW_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_VERSION_MINOR, 3);
         RootNode->setName("Root");
-        ToolNode->setName("ToolNode");
     }
 
     Engine *Engine::GetIns() {
@@ -238,17 +232,16 @@ namespace CEngine {
             viewM = glm::mat4(1.f);
             projectM = glm::mat4(1.f);
         }
-        // projectM = glm::scale(glm::mat4(1.f), glm::vec3(9.f / 16.f, 1.f, 1.f));
         std::stack<Node *> stack;
-        stack.push(ToolNode);
         stack.push(RootNode);
         while (!stack.empty()) {
             Node *node = stack.top();
             stack.pop();
+            if (!node->IsActive()) continue;
             if (node->GetChildCount() > 0)
                 for (const auto child: node->GetChildren())
                     stack.push(child);
-            if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr && behaviour->IsValid())
+            if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)
                 behaviour->Process(DeltaTime);
             if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr) {
                 if (const auto pbr3d = dynamic_cast<PBR3D *>(ru3d); pbr3d != nullptr)
@@ -267,7 +260,6 @@ namespace CEngine {
         glfwDestroyWindow(window);
         glfwTerminate();
         delete RootNode;
-        delete ToolNode;
         delete ui;
         UI::Destroy();
         delete this;
