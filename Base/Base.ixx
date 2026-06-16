@@ -50,4 +50,24 @@ namespace CEngine {
             return {glm::degrees(Pitch), glm::degrees(Yaw), glm::degrees(Roll)};
         }
     };
+
+    // 透明查找
+    export struct StringHash {
+        using is_transparent = void;
+        size_t operator()(std::string_view sv) const noexcept {
+            return std::hash<std::string_view>{}(sv);
+        }
+        size_t operator()(const std::string& s) const noexcept {
+            return std::hash<std::string_view>{}(s);
+        }
+        size_t operator()(const char* cstr) const noexcept {
+            return std::hash<std::string_view>{}(cstr);
+        }
+    };
+    export struct StringEqual {
+        using is_transparent = void;
+        bool operator()(std::string_view a, std::string_view b) const noexcept {
+            return a == b;
+        }
+    };
 }

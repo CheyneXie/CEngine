@@ -7,7 +7,6 @@
  */
 
 module;
-
 export module CEngine.Node:Node;
 import :Behaviour;
 import std;
@@ -69,7 +68,7 @@ namespace CEngine {
         void AddChild(Node *node) {
             // 判断节点是否有原父级
             if (const auto raw_parent = node->Parent; raw_parent != nullptr) {
-                raw_parent->PopChild(node->Name); // 从原父级中删除
+                raw_parent->RemoveChild(node->Name); // 从原父级中删除
             }
             node->Parent = this;
             node->setName(node->Name); // 原地设置，让setName自动判断是否有重复名
@@ -77,11 +76,43 @@ namespace CEngine {
         }
 
         /**
+         * 获得指定子级指针
+         * @param name 目标名称
+         * @return 目标子级指针
+         */
+        template<class T> requires std::derived_from<T, Node>
+        T *GetChild(const std::string_view name) {
+            if (auto it = Children.find(name); it != Children.end()) {
+                return dynamic_cast<T *>(it->second);
+            }
+            return nullptr;
+        }
+
+        /// @link GetChild \endlink
+        template<class T> requires std::derived_from<T, Node>
+        T *operator[](const std::string_view name) {
+            return GetChild<T>(name);
+        }
+
+        /**
+         * 弹出子级
+         * @param name 目标名称
+         * @return 目标对象的optional<Node>容器
+         */
+        template<class T> requires std::derived_from<T, Node>
+        T *PopChild(const std::string_view name) {
+            const auto t = GetChild<T>(name);
+            if (t != nullptr)
+                t->Parent = nullptr;
+            return t;
+        }
+
+        /**
          * 删除子级
          * @param name 目标名称
          */
-        void RemoveChild(const std::string &name) {
-            delete PopChild(name);
+        void RemoveChild(const std::string_view name) {
+            delete PopChild<Node>(name);
         }
 
         void RemoveAllChildren() {
@@ -92,52 +123,33 @@ namespace CEngine {
         }
 
         /**
-         * 弹出子级
-         * @param name 目标名称
-         * @return 目标对象的optional<Node>容器
-         */
-        Node *PopChild(const std::string &name) {
-            const auto t = Children.extract(name);
-            if (t.empty()) return nullptr;
-            const auto n = t.mapped();
-            n->Parent = nullptr;
-            return n;
-        }
-
-        /**
-         * 获得指定子级指针
-         * @param name 目标名称
-         * @return 目标子级指针
-         */
-        Node *GetChild(const std::string &name) {
-            if (!HasChild(name)) return nullptr;
-            return Children[name];
-        }
-
-        /// @link GetChild \endlink
-        Node *operator[](const std::string &name) {
-            return GetChild(name);
-        }
-
-        /// @link GetChild \endlink
-        template<class T>
-        T *GetChild(const std::string &name) {
-            static_assert(std::is_base_of_v<Node, T>, "目标类型必须是Node的派生类!");
-            if (!HasChild(name)) return nullptr;
-            return dynamic_cast<T *>(Children[name]);
-        }
-
-        /**
          * 判断是否存在对应子级
          * @param name 子级名称
          * @return 是否存在对应子级
          */
-        bool HasChild(const std::string &name) const {
+        bool HasChild(const std::string_view name) const {
             return Children.contains(name);
         }
 
         /// @file Export.ixx
-        void PrintChildrenTree(Logger::LogLevel ll = Logger::LogLevel::D);
+        void PrintChildrenTree(Logger::LogLevel ll = Logger::LogLevel::D) {
+            auto Log = Logger(ll, TAG);
+            Log << "\n";
+            std::stack<std::pair<Node *, int> > _stack;
+            _stack.push({this, 0});
+            while (!_stack.empty()) {
+                auto [node, tab] = _stack.top();
+                _stack.pop();
+                for (int i = 0; i < tab; ++i) {
+                    Log << "    ";
+                }
+                Log << "(" << typeid(*node).name() << ") " << node->Name << "\n";
+                for (auto child: node->Children | std::views::values) {
+                    _stack.push({child, tab + 1});
+                }
+            }
+            Logger(ll, TAG) << "输出完成";
+        }
 
         /// @property Parent
         Node *getParent() const { return Parent; }
@@ -146,8 +158,8 @@ namespace CEngine {
         std::string getName() const { return Name; }
 
         /// @property Name
-        void setName(const std::string &name) {
-            const std::string new_name = name.empty() ? Utils::GenerateUUID() : name;
+        void setName(const std::string_view name) {
+            const std::string new_name = name.empty() ? Utils::GenerateUUID() : std::string(name);
             if (Parent != nullptr) {
                 // 判断所在层级中Name是否唯一
                 auto desire_name = new_name;
@@ -192,7 +204,7 @@ namespace CEngine {
         /// @brief 父级
         Node *Parent = nullptr;
         /// @brief 所有子级
-        std::unordered_map<std::string, Node *> Children;
+        std::unordered_map<std::string, Node *, StringHash, StringEqual> Children;
         /// @brief Behaviour
         Behaviour *Behaviour = nullptr;
         /// @brief 是否激活

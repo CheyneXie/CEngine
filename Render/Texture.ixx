@@ -22,7 +22,6 @@ namespace CEngine {
     export class Texture final : public Object {
     public:
         static const char *TAG;
-        static std::unordered_map<std::string, Texture *> All_Instances;
 
         /// 重置纹理槽，需要在每次DrawCall后调用
         static void ResetTextureSlot() {
@@ -86,8 +85,37 @@ namespace CEngine {
             return Create(Utils::GetFileName(img_path, true), img);
         }
 
+        /**
+         * @brief 获取已创建的纹理
+         * 
+         * @param name 着色器程序名称
+         * @return Texture* 着色器程序指针
+         */
+        static Texture *Get(std::string_view name) {
+            auto it = All_Instances.find(name);
+            return it->second;
+        }
+
+        /**
+         * @brief 获取已创建纹理的数量
+         * 
+         * @return int 数量
+         */
+        static int Num() {
+            return All_Instances.size();
+        }
+
+        /**
+         * @brief Get All Instances
+         * 
+         * @return Texture::All_Instances
+         */
+        const static auto& Get() {
+            return All_Instances;
+        }
+
         Texture(const unsigned int id, std::string name, const int internal_format, const int data_format, const unsigned int width, const unsigned int height)
-            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Md5(std::move(name)) {
+            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Name(std::move(name)) {
         }
 
         Texture(const Texture &) = delete;
@@ -97,7 +125,7 @@ namespace CEngine {
 
         ~Texture() override {
             glDeleteTextures(1, &TextureID);
-            All_Instances.erase(Md5);
+            All_Instances.erase(Name);
         }
 
         int Use() const {
@@ -123,8 +151,8 @@ namespace CEngine {
         /// @property DataFormat
         int getDataFormat() const { return DataFormat; }
 
-        /// @property Md5
-        std::string getMd5() const { return Md5; }
+        /// @property Name
+        std::string getName() const { return Name; }
 
         /// @property Width
         unsigned int getWidth() const { return Width; }
@@ -139,10 +167,12 @@ namespace CEngine {
         int InternalFormat = GL_RGBA8;
         int DataFormat = GL_RGBA;
         unsigned int Width, Height;
-        std::string Md5;
+        std::string Name;
+
+        static std::unordered_map<std::string, Texture *, StringHash, StringEqual> All_Instances;
     };
 
     const char *Texture::TAG = "Texture";
-    std::unordered_map<std::string, Texture *> Texture::All_Instances;
+    std::unordered_map<std::string, Texture *, StringHash, StringEqual> Texture::All_Instances;
     int Texture::CurrentTextureSlot = 0;
 }

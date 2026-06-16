@@ -85,7 +85,7 @@ namespace CEngine {
 
     private:
         Camera3D *p3d = nullptr;
-        float speed = 0.01f;
+        float speed = 0.001f;
         float sensitivity = 1000.f;
         double last_x = 0, last_y = 0;
     };

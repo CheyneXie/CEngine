@@ -90,7 +90,7 @@ namespace CEngine {
                     }
                     for (const auto& name : BehaviourFactory::GetAllBehavioursName()) {
                         bool isSelected = (name == currentName);
-                        if (ImGui::Selectable(name.c_str(), isSelected)) {
+                        if (ImGui::Selectable(name.data(), isSelected)) {
                             node->SetBehaviour(BehaviourFactory::CreateBehaviour(name));
                         }
                         if (isSelected) ImGui::SetItemDefaultFocus();
@@ -137,8 +137,8 @@ namespace CEngine {
             if (ImGui::TreeNodeEx("Shader Uniforms Override", ImGuiTreeNodeFlags_DefaultOpen)) {
                 for (auto &[name,suv]: ru3d->getUniforms()) {
                     const auto type = suv.GetType();
-                    ImGui::BulletText("%s", name.c_str());
-                    ImGui::PushID(name.c_str());
+                    ImGui::BulletText("%s", name.data());
+                    ImGui::PushID(name.data());
                     if (type == ShaderUniformVar::Type::INT) {
                         auto v = suv.GetValue<int>();
                         if (ImGui::DragInt("int", &v, 1, -INT_MAX, INT_MAX, "%d")) {
@@ -178,20 +178,21 @@ namespace CEngine {
                         const auto tex = suv.GetValue<Texture *>();
                         int v = 0;
                         int index = 1;
-                        for (const auto t: Texture::All_Instances | std::views::values) {
+                        for (const auto t: Texture::Get() | std::views::values) {
                             if (t == tex) {
                                 v = index;
                                 break;
                             }
                             ++index;
                         }
-                        // 为了时索引为0时输出NULL，所有变量偏移1
+                        auto it = Texture::Get().cbegin();
                         if (ImGui::Combo("sampler2D", &v, [](void *data, const int idx)-> const char *{
                             if (idx == 0) return "None";
-                            return std::next(Texture::All_Instances.cbegin(), idx - 1)->first.c_str();
-                        }, nullptr, Texture::All_Instances.size() + 1)) {
-                            if (v >= 1)
-                                suv.SetValue(std::next(Texture::All_Instances.cbegin(), v - 1)->second);
+                            const auto it_ptr = static_cast<std::unordered_map<std::string, Texture *>::const_iterator *>(data);
+                            if (it_ptr == nullptr) return "Error";
+                            return std::next(*it_ptr, idx - 1)->first.data();
+                        }, &it, Texture::Num() + 1)) {
+                            if (v >= 1) suv.SetValue(std::next(it, v - 1)->second);
                         }
                     } else {
                         ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Have not implemented.");
@@ -200,19 +201,20 @@ namespace CEngine {
                 }
                 ImGui::Separator();
                 int v = 0;
-                auto it = ru3d->getShaderProgram()->getUniformsList().cbegin();
-                if (ImGui::Combo("Add Override", &v, [](void *data, const int idx)-> const char *{
-                    if (idx == 0) return "Add Override";
-                    const auto it_ptr = static_cast<std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator *>(data);
-                    if (it_ptr == nullptr) return "None";
-                    return std::next(std::forward<std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator>(*it_ptr),
-                                     idx - 1)->second.c_str();
-                }, &it, ru3d->getShaderProgram()->getUniformsList().size() + 1)) {
-                    if (v > 1) {
-                        const auto item = std::next(std::forward<std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator>(it),
-                                                    v - 1);
-                        ShaderUniformVar::Type type = item->first;
-                        ru3d->SetShaderUniform(item->second, type);
+                for (auto& name : ru3d->getShaderProgramNames()) {
+                    auto sp = ShaderProgram::Get(name);
+                    auto it = sp->getUniformsList().cbegin();
+                    auto sz = sp->getUniformsList().size();
+                    if (ImGui::Combo("Add Override", &v, [](void *data, const int idx)-> const char *{
+                        if (idx == 0) return "Add Override";
+                        const auto it_ptr = static_cast<std::vector<std::pair<ShaderUniformVar::Type, std::string> >::const_iterator *>(data);
+                        if (it_ptr == nullptr) return "Error";
+                        return std::next(*it_ptr, idx - 1)->second.c_str();
+                    }, &it, sz + 1)) {
+                        if (v >= 1) {
+                            const auto item = std::next(it, v - 1);
+                            ru3d->SetShaderUniform(item->second, item->first);
+                        }
                     }
                 }
                 ImGui::TreePop();

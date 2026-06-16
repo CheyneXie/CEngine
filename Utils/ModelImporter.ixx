@@ -21,7 +21,7 @@ import CEngine.Utils;
 namespace CEngine::ModelImporter {
     auto TAG = "ModelImporter";
 
-    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, const char *model_path, std::string shader_program_name, const float transform_scale = 1.0f) {
+    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, const char *model_path, RenderType render_type, const float transform_scale = 1.0f) {
         auto n3d = Node3D::Create();
         n3d->setName(node->mName.data);
         if (transform_scale == 1.0f)
@@ -61,21 +61,30 @@ namespace CEngine::ModelImporter {
             const auto m = Mesh::Create(vertices, indices);
             m->Name = mesh->mName.data;
             LogS(TAG) << "导入网格: " << m->Name;
-            if (shader_program_name == "PBR") {
-                const auto pbr3d = PBR3D::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path));
-                n3d->AddChild(pbr3d);
-            } else {
-                const auto ru3d = RenderUnit3D::Create(m, shader_program_name);
-                n3d->AddChild(ru3d);
+            switch (render_type) {
+                case RenderType::Base: {
+                    const auto ru3d = RenderUnit3D::Create(m);
+                    n3d->AddChild(ru3d);
+                    break;
+                }
+                case RenderType::PBR: {
+                    const auto pbr3d = PBR3D::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path));
+                    n3d->AddChild(pbr3d);
+                    break;
+                }
+                default: {
+                    LogE(TAG) << "渲染类型暂未实现";
+                    break;
+                }
             }
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            process_node(node->mChildren[i], scene, n3d, model_path, shader_program_name);
+            process_node(node->mChildren[i], scene, n3d, model_path, render_type);
         }
         parent->AddChild(std::move(n3d));
     }
 
-    export Node3D *import_model(const char *file_path, std::string shader_program_name = "Base", float transform_scale = 1.0f) {
+    export Node3D *import_model(const char *file_path, RenderType render_type = RenderType::Base, float transform_scale = 1.0f) {
         if (!Utils::FileExists(file_path)) {
             LogE(TAG) << "文件不存在: " << file_path;
             return nullptr;
@@ -90,7 +99,7 @@ namespace CEngine::ModelImporter {
         }
         const auto node = Node3D::Create();
         node->setName(scene->mName.data);
-        process_node(scene->mRootNode, scene, node, file_path, shader_program_name, transform_scale);
+        process_node(scene->mRootNode, scene, node, file_path, render_type, transform_scale);
         return node;
     }
 }

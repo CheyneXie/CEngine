@@ -24,11 +24,13 @@ namespace CEngine {
         }
 
         void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
-            RenderUnit3D::PreRender(viewM, projectM);
-            shader_program->SetUniform("CameraPosition", camPos);
-            // TODO Light
-            Mat.Use(shader_program);
-            RenderUnit3D::DoRender();
+            auto sp = ShaderProgram::Get("PBR");
+            sp->Use();
+            RenderUtil_SetBasicsMartrix(sp, viewM, projectM);
+            sp->SetUniform("CameraPosition", camPos);
+            Mat.Use(sp);
+            RenderUtil_SetShaderUniform(sp);
+            mesh->Render();
         }
 
         Material &getMaterial() {
@@ -36,7 +38,8 @@ namespace CEngine {
         }
 
     protected:
-        PBR3D(Mesh *m, Material &&mat) : RenderUnit3D(m, "PBR"), Mat(std::move(mat)) {
+        PBR3D(Mesh *m, Material &&mat) : RenderUnit3D(m), Mat(std::move(mat)) {
+            shader_program_names = { "PBR" };
         }
 
         Material Mat;

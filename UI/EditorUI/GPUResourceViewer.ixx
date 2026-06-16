@@ -34,8 +34,8 @@ namespace CEngine {
                         ShaderManager::LoadShaderProgram();
                     }
                     if (ImGui::BeginListBox("##ShaderProgram#ListBox", ImVec2(-FLT_MIN, -FLT_MIN))) {
-                        for (auto &[name, shader]: ShaderProgram::All_Instances)
-                            if (ImGui::Selectable(name.c_str(), shader == SelectedShaderProgram))
+                        for (auto &[name, shader]: ShaderProgram::Get())
+                            if (ImGui::Selectable(name.data(), shader == SelectedShaderProgram))
                                 SelectedShaderProgram = shader;
                         ImGui::EndListBox();
                     }
@@ -81,8 +81,8 @@ namespace CEngine {
                         Texture::FromFile(Utils::ShowOpenFileDialog().string().c_str());
                     }
                     if (ImGui::BeginListBox("##Texture#ListBox", ImVec2(-FLT_MIN, -FLT_MIN))) {
-                        for (auto &[name, tex]: Texture::All_Instances)
-                            if (ImGui::Selectable(name.c_str(), tex == SelectedTexture))
+                        for (auto &[name, tex]: Texture::Get())
+                            if (ImGui::Selectable(name.data(), tex == SelectedTexture))
                                 SelectedTexture = tex;
                         ImGui::EndListBox();
                     }
@@ -99,7 +99,7 @@ namespace CEngine {
                             ImGui::TableNextColumn();
                             ImGui::Text("MD5");
                             ImGui::TableNextColumn();
-                            ImGui::Text("%s", SelectedTexture->getMd5().c_str());
+                            ImGui::Text("%s", SelectedTexture->getName().c_str());
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
                             ImGui::Text("Texture ID");

@@ -24,7 +24,7 @@ namespace CEngine {
             LogI("Behaviour工厂") << "注册Behaviour: " << T::Name;
         }
 
-        static Behaviour* CreateBehaviour(const std::string &name) {
+        static Behaviour* CreateBehaviour(const std::string_view &name) {
             if (Behaviours.contains(name))
                 return Behaviours[name]();
             else LogE(TAG) << "未找到 Behaviour : " << name;
@@ -36,8 +36,8 @@ namespace CEngine {
         }
 
     private:
-        static std::unordered_map<std::string, std::function<Behaviour*()> > Behaviours;
+        static std::unordered_map<std::string_view, std::function<Behaviour*()> > Behaviours;
     };
     const char* BehaviourFactory::TAG = "Behaviour工厂";
-    std::unordered_map<std::string, std::function<Behaviour*()> > BehaviourFactory::Behaviours;
+    std::unordered_map<std::string_view, std::function<Behaviour*()> > BehaviourFactory::Behaviours;
 }

@@ -25,31 +25,32 @@ namespace CEngine {
             return "RenderUnit3D";
         }
 
-        static RenderUnit3D *Create(Mesh *m, std::string shader_program_name) {
-            return new RenderUnit3D(m, shader_program_name);
+        static RenderUnit3D *Create(Mesh *m) {
+            return new RenderUnit3D(m);
         }
 
-        void PreRender(const glm::mat4 &viewM, const glm::mat4 &projectM) {
-            shader_program->Use();
-            shader_program->SetUniform(0, GetWorldMatrix());
-            shader_program->SetUniform(1, viewM);
-            shader_program->SetUniform(2, projectM);
+        void RenderUtil_SetBasicsMartrix(ShaderProgram *sp, const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            sp->SetUniform(0, GetWorldMatrix());
+            sp->SetUniform(1, viewM);
+            sp->SetUniform(2, projectM);
         }
 
-        void DoRender() {
+        void RenderUtil_SetShaderUniform(ShaderProgram *sp) {
             if (!uniforms.empty())
-                for (auto [name, value]: uniforms) {
-                    shader_program->SetShaderUniformVar(name.c_str(), value);
+                for (auto& [name, value]: uniforms) {
+                    sp->SetShaderUniformVar(name.c_str(), value);
                 }
-            mesh->Render();
         }
 
         /**
          * 执行渲染
          */
         void Render(const glm::mat4 &viewM, const glm::mat4 &projectM) {
-            PreRender(viewM, projectM);
-            DoRender();
+            auto sp = ShaderProgram::Get("Base");
+            sp->Use();
+            RenderUtil_SetBasicsMartrix(sp, viewM, projectM);
+            RenderUtil_SetShaderUniform(sp);
+            mesh->Render();
         }
 
         /**
@@ -68,20 +69,18 @@ namespace CEngine {
         Mesh *getMesh() const { return mesh; }
 
         /// @property shader_program
-        ShaderProgram *getShaderProgram() const { return shader_program; }
+        const std::vector<std::string_view>& getShaderProgramNames() const { return shader_program_names; }
 
         /// @property uniforms
-        std::unordered_map<std::string, ShaderUniformVar> &getUniforms() { return uniforms; }
+        std::unordered_map<std::string, ShaderUniformVar, StringHash, StringEqual> &getUniforms() { return uniforms; }
 
     protected:
-        RenderUnit3D(Mesh *m, std::string shader_program_name) : mesh(m), shader_program_name(shader_program_name) {
-            shader_program = ShaderProgram::All_Instances[shader_program_name];
-            ShaderManager::Event_ReloadShader += [this]() { this->shader_program = ShaderProgram::All_Instances[this->shader_program_name]; };
+        RenderUnit3D(Mesh *m) : mesh(m) {
+            shader_program_names = { "Base" };
         }
 
         Mesh *mesh;
-        std::string shader_program_name;
-        ShaderProgram *shader_program;
-        std::unordered_map<std::string, ShaderUniformVar> uniforms;
+        std::vector<std::string_view> shader_program_names;
+        std::unordered_map<std::string, ShaderUniformVar, StringHash, StringEqual> uniforms;
     };
 }

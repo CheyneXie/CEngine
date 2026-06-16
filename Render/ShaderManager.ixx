@@ -21,11 +21,9 @@ namespace CEngine {
         static Event<void()> Event_ReloadShader;
 
         static void LoadShaderProgram() {
-            bool is_reload = false;
-            if (ShaderProgram::All_Instances.size() > 0) {
-                is_reload = true;
-                for (auto sp : (ShaderProgram::All_Instances | std::views::values))
-                    delete sp;
+            std::optional<std::vector<ShaderProgram *>> TempVec;
+            if (ShaderProgram::Num() > 0) {
+                TempVec = ShaderProgram::Get() | std::views::values | std::ranges::to<std::vector>();
                 ShaderProgram::All_Instances.clear();
             }
             LogI(TAG) << "编译着色器...";
@@ -54,7 +52,11 @@ namespace CEngine {
                             ->Link();
                 }
             }
-            if (is_reload) Event_ReloadShader.Invoke();
+            if (TempVec) {
+                // for (auto ptr : *TempVec)
+                    // delete ptr;
+                Event_ReloadShader.Invoke();
+            }
         }
     };
     std::vector<const char *> ShaderManager::ShaderDirectory;

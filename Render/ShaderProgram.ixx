@@ -22,8 +22,7 @@ namespace CEngine {
     export class ShaderProgram final : public Object {
     public:
         const static char *TAG;
-        static std::unordered_map<std::string, ShaderProgram *> All_Instances;
-
+        friend class ShaderManager;
 
         ShaderProgram(const ShaderProgram &) = delete;
         ShaderProgram &operator=(const ShaderProgram &) = delete;
@@ -53,13 +52,44 @@ namespace CEngine {
         }
 
         /**
+         * @brief 获取已创建的着色器程序
+         * 
+         * @param name 着色器程序名称
+         * @return ShaderProgram* 着色器程序指针
+         */
+        static ShaderProgram *Get(std::string_view name) {
+            auto sp = All_Instances.find(name);
+            return sp->second;
+        }
+
+        /**
+         * @brief 获取已创建着色器程序的数量
+         * 
+         * @return int 数量
+         */
+        static int Num() {
+            return All_Instances.size();
+        }
+
+        /**
+         * @brief Get All Instances
+         * 
+         * @return ShaderProgram::All_Instances
+         */
+        const static auto& Get() {
+            return All_Instances;
+        }
+
+        /**
          * 添加Shader
          * @param shader GLSL对象
          * @return <code>self</code>可链式调用
          */
         ShaderProgram *AddShader(GLSL *shader) {
             glsl_list.push_back(shader->getName());
-            UniformsList.insert(shader->getUniformsList().begin(), shader->getUniformsList().end());
+            std::unordered_set<std::pair<ShaderUniformVar::Type, std::string>> uls(UniformsList.begin(), UniformsList.end()); // 查重
+            uls.insert(shader->getUniformsList().begin(), shader->getUniformsList().end());
+            UniformsList.assign(uls.begin(), uls.end());
             glAttachShader(shader_program_id, shader->getShaderID());
             return this;
         }
@@ -223,7 +253,7 @@ namespace CEngine {
         unsigned int getShaderProgramID() const { return shader_program_id; }
 
         /// @property UniformsList
-        std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> > &getUniformsList() { return UniformsList; }
+        std::vector<std::pair<ShaderUniformVar::Type, std::string> > &getUniformsList() { return UniformsList; }
 
     private:
         ShaderProgram() : ShaderProgram(Utils::GenerateUUID()) {
@@ -239,11 +269,13 @@ namespace CEngine {
         /// @brief 用于通过All_Instances调用的key
         std::string Name;
         /// @brief UniformsList
-        std::unordered_set<std::pair<ShaderUniformVar::Type, std::string> > UniformsList;
+        std::vector<std::pair<ShaderUniformVar::Type, std::string>> UniformsList;
         /// @brief 该着色器程序所链接的GLSL，仅用于调试输出
         std::vector<std::string> glsl_list;
+
+        static std::unordered_map<std::string, ShaderProgram *, StringHash, StringEqual> All_Instances;
     };
 
     const char *ShaderProgram::TAG = "ShaderProgram";
-    std::unordered_map<std::string, ShaderProgram *> ShaderProgram::All_Instances;
+    std::unordered_map<std::string, ShaderProgram *, StringHash, StringEqual> ShaderProgram::All_Instances;
 }

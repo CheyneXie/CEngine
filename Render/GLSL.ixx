@@ -18,8 +18,7 @@ import CEngine.Logger;
 import CEngine.Utils;
 
 namespace CEngine {
-    const std::regex ShaderUniformPattern_1(R"(^uniform\s(\w+?)\s(\w+))");
-    const std::regex ShaderUniformPattern_2(R"(layout.*?uniform\s(\w+?)\s(\w+))");
+    const std::regex ShaderUniformPattern_1(R"(uniform\s(\w+?)\s(\w+))");
 
     /**
      * @brief GLSL文件类\n
@@ -96,11 +95,6 @@ namespace CEngine {
             std::smatch match;
             auto it = glsl_source.cbegin();
             while (std::regex_search(it, glsl_source.cend(), match, ShaderUniformPattern_1)) {
-                it = match[0].second;
-                uniforms.insert({ShaderUniformVar::StringToType(match[1]), match[2]});
-            }
-            it = glsl_source.cbegin();
-            while (std::regex_search(it, glsl_source.cend(), match, ShaderUniformPattern_2)) {
                 it = match[0].second;
                 uniforms.insert({ShaderUniformVar::StringToType(match[1]), match[2]});
             }

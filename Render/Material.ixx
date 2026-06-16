@@ -163,14 +163,14 @@ namespace CEngine {
             for (int i = 0; i < 8; i++) {
                 if (!exists[i])
                     switch (i) {
-                        case 0: set_texture_uniform(shader_id, "Tex_BaseColor", Texture::All_Instances["<White>"]); break;
-                        case 1: set_texture_uniform(shader_id, "Tex_Emissive", Texture::All_Instances["<Black>"]); break;
-                        case 2: set_texture_uniform(shader_id, "Tex_Height", Texture::All_Instances["<Black>"]); break;
-                        case 3: set_texture_uniform(shader_id, "Tex_Normals", Texture::All_Instances["<DefalueNormal>"]); break;
-                        case 4: set_texture_uniform(shader_id, "Tex_Opacity", Texture::All_Instances["<White>"]); break;
-                        case 5: set_texture_uniform(shader_id, "Tex_Metalness", Texture::All_Instances["<Gray>"]); break;
-                        case 6: set_texture_uniform(shader_id, "Tex_Roughness", Texture::All_Instances["<Gray>"]); break;
-                        case 7: set_texture_uniform(shader_id, "Tex_AmbientOcclusion", Texture::All_Instances["<White>"]); break;
+                        case 0: set_texture_uniform(shader_id, "Tex_BaseColor", Texture::Get("<White>")); break;
+                        case 1: set_texture_uniform(shader_id, "Tex_Emissive", Texture::Get("<Black>")); break;
+                        case 2: set_texture_uniform(shader_id, "Tex_Height", Texture::Get("<Black>")); break;
+                        case 3: set_texture_uniform(shader_id, "Tex_Normals", Texture::Get("<DefalueNormal>")); break;
+                        case 4: set_texture_uniform(shader_id, "Tex_Opacity", Texture::Get("<White>")); break;
+                        case 5: set_texture_uniform(shader_id, "Tex_Metalness", Texture::Get("<Gray>")); break;
+                        case 6: set_texture_uniform(shader_id, "Tex_Roughness", Texture::Get("<Gray>")); break;
+                        case 7: set_texture_uniform(shader_id, "Tex_AmbientOcclusion", Texture::Get("<White>")); break;
                         default: break;
                     }
             }
