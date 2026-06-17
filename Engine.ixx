@@ -15,10 +15,12 @@ export module CEngine.Engine;
 import std;
 import CEngine.Base;
 import CEngine.Logger;
-import CEngine.Event;
 import CEngine.Node;
 import CEngine.Render;
 import CEngine.UI;
+import CEngine.PresetsLoader;
+import CEngine.EventBus;
+import CEngine.InputSystem;
 
 namespace CEngine {
     /**
@@ -30,17 +32,17 @@ namespace CEngine {
     public:
         const static char *TAG;
         /**
-        * 获得引擎实例
-        */
-        static Engine *GetIns();
-        /**
-        * 创建窗口
+        * 初始化引擎
         * @param width 窗口宽度
         * @param height 窗口高度
         * @param title 窗口标题
         * @return 窗口创建是否成功
         */
-        bool NewWindow(int width, int height, const char *title);
+        static bool Init(const int width, const int height, const char *title);
+        /**
+        * 获得引擎实例
+        */
+        static Engine *GetIns();
         /**
         * 引擎主循环
         * @remark 堵塞型
@@ -71,31 +73,8 @@ namespace CEngine {
             ui = u;
         }
 
-        /**
-        * @brief 事件：窗口大小被改变
-        * @param 0 GLFWwindow对象
-        * @param 1 窗口宽度
-        * @param 2 窗口高度
-        */
-        Event<void(GLFWwindow *, int, int)> Event_WindowResized;
-        /**
-         *  @brief 事件：引擎准备就绪
-         */
-        Event<void()> Event_Ready;
-        /**
-         * @brief 事件：引擎帧处理
-         * @param 0 上一帧处理用时(ms)
-        */
-        Event<void(double)> Event_Process;
-        /**
-         *  @brief 事件：引擎退出时
-         */
-        Event<void()> Event_Destroy;
-
     private:
         Engine();
-        /// @brief 引擎实例对象指针
-        static Engine *Ins;
         /// @brief 窗口对象指针<code>GLFWwindow</code>
         GLFWwindow *window;
         /// @brief UI
@@ -122,33 +101,23 @@ namespace CEngine {
     };
 
     const char *Engine::TAG = "引擎";
-    Engine *Engine::Ins = nullptr;
 
     Engine::Engine() {
-        Ins = this;
-        window = nullptr;
-        ui = nullptr;
         glfwInit();
         glfwWindowHint(GLFW_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_VERSION_MINOR, 3);
         RootNode->setName("Root");
     }
 
-    Engine *Engine::GetIns() {
-        if (Ins->IsValid())
-            return Ins;
-        Ins = new Engine();
-        return Ins;
-    }
-
-    bool Engine::NewWindow(const int width, const int height, const char *title) {
-        window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-        if (window == nullptr) {
+    bool Engine::Init(const int width, const int height, const char *title) {
+        auto engine = Engine::GetIns();
+        engine->window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+        if (engine->window == nullptr) {
             LogE(TAG) << "创建窗口失败!";
             glfwTerminate();
             return false;
         }
-        glfwMakeContextCurrent(window);
+        glfwMakeContextCurrent(engine->window);
         glfwSwapInterval(0); // 关闭垂直同步
         LogS(TAG) << "窗口创建成功.";
 
@@ -157,16 +126,26 @@ namespace CEngine {
             glfwTerminate();
             return false;
         }
-        LogS(TAG) << "GLAD加载成功.";
+        LogS(TAG) << "GLAD 加载成功.";
+        
+        InputSystem().Init(engine->window);
+        LogS(TAG) << "InputSystem 加载成功.";
         return true;
     }
 
+    Engine *Engine::GetIns() {
+        static std::unique_ptr<Engine> instance = std::unique_ptr<Engine>(new Engine());
+        return instance.get();
+    }
+    
     void Engine::Loop() {
+        PresetsLoader::LoadAll();
         Ready();
         double DeltaTime = 0;
         while (!glfwWindowShouldClose(window)) {
+            EventBus().EnginePreProcess.Invoke(DeltaTime);
             DeltaTime = Process(DeltaTime);
-            Event_Process.Invoke(DeltaTime);
+            EventBus().EnginePostProcess.Invoke(DeltaTime);
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -192,7 +171,7 @@ namespace CEngine {
         glfwSetFramebufferSizeCallback(window, [](GLFWwindow *_window, const int _width, int _height) {
             glViewport(0, 0, _width, _height);
             LogI(TAG) << "设置Viewport: " << _width << "x" << _height;
-            GetIns()->Event_WindowResized.Invoke(_window, _width, _height);
+            EventBus().WindowResized.Invoke(_window, _width, _height);
         });
         // 背面剔除
         glEnable(GL_CULL_FACE);
@@ -205,13 +184,13 @@ namespace CEngine {
         // 编译着色器
         ShaderManager::LoadShaderProgram();
         // 订阅Camera激活事件
-        Camera::Event_CameraActivated += [&](Camera *cam) {
+        EventBus().CameraActivated += [&](void *cam) {
             LogI(TAG) << "活动相机变更";
-            this->CurrentCamera = cam;
-            this->CurrentCamera3D = dynamic_cast<Camera3D *>(cam);
+            this->CurrentCamera = static_cast<Camera *>(cam);
+            this->CurrentCamera3D = dynamic_cast<Camera3D *>(this->CurrentCamera);
         };
         // 触发Event
-        Event_Ready.Invoke();
+        EventBus().EngineReady.Invoke();
     }
 
     double Engine::Process(const double DeltaTime) {
@@ -256,13 +235,12 @@ namespace CEngine {
     }
 
     void Engine::Destroy() {
-        Event_Destroy.Invoke();
+        EventBus().EngineDestroy.Invoke();
         glfwDestroyWindow(window);
         glfwTerminate();
         delete RootNode;
         delete ui;
         UI::Destroy();
-        delete this;
     }
 
     std::pair<int, int> Engine::GetScreenSize() const {

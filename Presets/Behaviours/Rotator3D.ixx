@@ -11,7 +11,6 @@ module;
 #include <glm/ext/scalar_constants.hpp>
 export module CEngine.Presets.Behaviours:Rotator3D;
 import std;
-import CEngine.Engine;
 import CEngine.Node;
 
 namespace CEngine {

@@ -31,7 +31,6 @@ namespace CEngine {
 
         ~ShaderProgram() override {
             glDeleteProgram(shader_program_id);
-            All_Instances.erase(Name);
         }
 
         /**
@@ -59,6 +58,10 @@ namespace CEngine {
          */
         static ShaderProgram *Get(std::string_view name) {
             auto sp = All_Instances.find(name);
+            if (sp == All_Instances.end()) {
+                LogE(TAG) << "未找到指定 ShaderProgram: " << name;
+                return nullptr;
+            }
             return sp->second;
         }
 

@@ -93,6 +93,10 @@ namespace CEngine {
          */
         static Texture *Get(std::string_view name) {
             auto it = All_Instances.find(name);
+            if (it == All_Instances.end()) {
+                LogE(TAG) << "未找到指定 Texture: " << name;
+                return nullptr;
+            }
             return it->second;
         }
 

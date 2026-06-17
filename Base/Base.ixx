@@ -11,12 +11,10 @@ module;
 #include <glm/gtc/quaternion.hpp>
 export module CEngine.Base;
 export import :Object;
+export import :Event;
 import std;
 
 namespace CEngine {
-    // export using shader_uniforms_type = std::variant<int, int *, unsigned int, unsigned int *, float, float *, double, double *, glm::mat3, glm::mat4>;
-    // export using shader_uniforms_var = std::variant<int, unsigned int, float>;
-
     export auto WorldZero = glm::vec3(0.0f, 0.0f, 0.0f);
     export auto WorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
     export auto WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);

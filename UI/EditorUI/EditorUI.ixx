@@ -18,6 +18,7 @@ import std;
 import CEngine.UI;
 import CEngine.Engine;
 import CEngine.Logger;
+import CEngine.EventBus;
 
 namespace CEngine {
     export class EditorUI final : public UI {
@@ -27,7 +28,7 @@ namespace CEngine {
         EditorUI(): UI(Engine::GetIns()->getWindow()) {
             file_browser.RefreshCache();
             scene_tree_browser.RefreshCache();
-            Engine::GetIns()->Event_Process += [this](const double DeltaTime) {
+            EventBus().EnginePostProcess += [this](const double DeltaTime) {
                 if (time_record > 1000) {
                     fps = frame_record / time_record * 1000;
                     frame_time = time_record / frame_record;

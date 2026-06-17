@@ -16,21 +16,18 @@ apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp
 #### C++
 ```c++
 import CEngine.Engine;
-import CEngine.PresetsLoader;
 import CEngine.EditorUI;
 import CEngine.Node;
+import CEngine.EventBus;
 
 int main(){
     // 初始化引擎
+    CEngine::Engine::Init(1920, 1080, "title");
     const auto engine = CEngine::Engine::GetIns();
-    // 创建窗口
-    engine->NewWindow(1920, 1080, "title");
-    // 加载内置资源
-    CEngine::PresetsLoader::LoadAll();
     // 设置UI
     engine->setUI(new CEngine::EditorUI());
     // 添加漫游相机
-    engine->Event_Ready += [&]() {
+    CEngine::EventBus().EngineReady += [engine]() {
         const auto camera = CEngine::Camera3D::Create();
         camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("Fly Camera"));
         engine->getRoot()->AddChild(camera);

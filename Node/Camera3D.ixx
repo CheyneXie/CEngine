@@ -11,7 +11,6 @@ module;
 export module CEngine.Node:Camera3D;
 import :Node3D;
 import CEngine.Render;
-import CEngine.Event;
 
 namespace CEngine {
     export class Camera3D final : public Node3D, public Camera {

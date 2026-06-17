@@ -13,20 +13,18 @@ module;
 export module CEngine.Render:Camera;
 import std;
 import CEngine.Base;
-import CEngine.Event;
+import CEngine.EventBus;
 
 namespace CEngine {
     export class Camera : public Object {
     public:
-        static Event<void(Camera *)> Event_CameraActivated;
-
         explicit Camera(const float fov = 75.0f, const float aspect_ratio = 16.0f / 9.0f, const float z_near = 0.1f,
                         const float z_far = 5000.0f): FOV(fov), AspectRatio(aspect_ratio), zNear(z_near), zFar(z_far) {
             UpdateProjectionMatrix();
         };
 
         void Active() {
-            Event_CameraActivated.Invoke(this);
+            EventBus().CameraActivated.Invoke(this);
         }
 
         void SetFov(const float fov) {
@@ -75,6 +73,4 @@ namespace CEngine {
         /// 远裁剪平面
         float zFar;
     };
-
-    Event<void(Camera *)> Camera::Event_CameraActivated = Event<void(Camera *)>();
 }

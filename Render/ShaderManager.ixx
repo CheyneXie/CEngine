@@ -9,8 +9,8 @@
 export module CEngine.Render:ShaderManager;
 import :GLSL;
 import :ShaderProgram;
-import CEngine.Event;
 import CEngine.Utils;
+import CEngine.EventBus;
 import std;
 
 namespace CEngine {
@@ -18,7 +18,6 @@ namespace CEngine {
     public:
         static const char *TAG;
         static std::vector<const char *> ShaderDirectory;
-        static Event<void()> Event_ReloadShader;
 
         static void LoadShaderProgram() {
             std::optional<std::vector<ShaderProgram *>> TempVec;
@@ -53,13 +52,12 @@ namespace CEngine {
                 }
             }
             if (TempVec) {
-                // for (auto ptr : *TempVec)
-                    // delete ptr;
-                Event_ReloadShader.Invoke();
+                for (auto ptr : *TempVec)
+                    delete ptr;
+                EventBus().ShaderReloaded.Invoke();
             }
         }
     };
     std::vector<const char *> ShaderManager::ShaderDirectory;
-    Event<void()> ShaderManager::Event_ReloadShader;
     const char *ShaderManager::TAG = "Shader管理器";
 }

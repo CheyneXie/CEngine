@@ -6,9 +6,9 @@
  * @date 2024/09/30
  */
 
-export module CEngine.Event;
+export module CEngine.Base:Event;
+import :Object;
 import std;
-import CEngine.Base;
 
 namespace CEngine {
     export template<typename Res, typename... ArgTypes>
@@ -33,11 +33,11 @@ namespace CEngine {
         Event &operator+=(const std::function<Res(ArgTypes...)> func) {
             if constexpr (std::is_void_v<Res>) {
                 /* 判断void，减少封装 */
-                Functions.push_back(func);
+                Functions.emplace(GetNextIdx(), std::move(func));
             } else {
-                Functions.push_back([func](ArgTypes... args) -> rRes {
+                Functions.emplace(GetNextIdx(), std::move([func](ArgTypes... args) -> rRes {
                     return {std::invoke(func, args...)};
-                });
+                }));
             }
             return *this;
         }
@@ -49,18 +49,25 @@ namespace CEngine {
         */
         template<class T>
         Event &operator+=(std::tuple<T *, Res(T::*)(ArgTypes...)> t) {
-            /* 类函数必须封装，不需要判断void */
-            Functions.push_back([t](ArgTypes... args) -> rRes {
+            Functions.emplace(GetNextIdx(), std::move([t](ArgTypes... args) -> rRes {
                 if constexpr (std::is_base_of_v<Object, T>) {
                     /* 如果是Object的子类，增加对象可用判断 */
-                    if (const auto obj_ptr = static_cast<Object *>(std::get<0>(t)); obj_ptr != nullptr && obj_ptr->IsValid())
-                        return {std::invoke(std::get<1>(t), std::get<0>(t), args...)};
-                    return std::nullopt; // 对象不可用
-                } else {
-                    /* 不是Object的子类，直接执行 */
-                    return {std::invoke(std::get<1>(t), std::get<0>(t), args...)};
+                    if (const auto obj_ptr = static_cast<Object *>(std::get<0>(t)); obj_ptr == nullptr || !obj_ptr->IsValid()) {
+                        // 对象不可用
+                        if constexpr (std::is_same_v<Res, void>) return;
+                        else return std::nullopt;
+                    }
                 }
-            });
+                if constexpr (std::is_same_v<Res, void>) {
+                    std::invoke(std::get<1>(t), std::get<0>(t), args...);
+                    return;
+                } else return std::optional<Res>{std::invoke(std::get<1>(t), std::get<0>(t), args...)};
+            }));
+            return *this;
+        }
+
+        Event &operator-=(std::size_t idx) {
+            Functions.erase(idx);
             return *this;
         }
 
@@ -71,15 +78,15 @@ namespace CEngine {
         */
         [[nodiscard]] auto Invoke(ArgTypes... args) {
             if constexpr (std::is_void_v<Res>) {
-                for (auto &f: Functions) {
+                for (auto &f: Functions | std::views::values) {
                     std::invoke(f, args...);
                 }
             } else {
                 std::vector<std::optional<Res> > res;
                 for (auto it = Functions.begin(); it != Functions.end();) {
-                    auto r = std::invoke(*it, args...);
+                    auto r = std::invoke(it->second, args...);
                     if (r == std::nullopt)
-                        it = Functions.erase(it); // 对象已失效
+                        it = Functions.erase(it); // Object对象已失效
                     else
                         ++it;
                     res.push_back(std::move(r));
@@ -88,7 +95,15 @@ namespace CEngine {
             }
         }
 
+        /**
+         * @brief 获取下一次绑定所使用的索引
+         * @return std::size_t 
+         */
+        std::size_t GetNextIdx() {
+            return Functions.empty() ? 0 : Functions.rbegin()->first + 1;
+        }
+
     private:
-        std::vector<std::function<rRes(ArgTypes...)> > Functions;
+        std::map<std::size_t, std::function<rRes(ArgTypes...)> > Functions;
     };
 }
