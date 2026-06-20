@@ -17,6 +17,7 @@ import CEngine.Base;
 import CEngine.Logger;
 import CEngine.Node;
 import CEngine.Render;
+import CEngine.RenderUnit;
 import CEngine.UI;
 import CEngine.PresetsLoader;
 import CEngine.EventBus;
@@ -223,10 +224,13 @@ namespace CEngine {
             if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)
                 behaviour->Process(DeltaTime);
             if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr) {
-                if (const auto pbr3d = dynamic_cast<PBR3D *>(ru3d); pbr3d != nullptr)
-                    pbr3d->Render(viewM, projectM, CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero);
-                else
-                    ru3d->Render(viewM, projectM);
+                auto worldM = ru3d->GetWorldMatrix();
+                if (auto ru = ru3d->GetRU(); ru != nullptr) {
+                    if (auto pbr = dynamic_cast<PBR*>(ru); pbr != nullptr)
+                        pbr->Render(worldM, viewM, projectM, CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero);
+                    else
+                        ru->Render(worldM, viewM, projectM);
+                }
                 DrawCallEnd();
             }
         }

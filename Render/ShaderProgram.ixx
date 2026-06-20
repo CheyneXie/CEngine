@@ -88,12 +88,12 @@ namespace CEngine {
          * @param shader GLSL对象
          * @return <code>self</code>可链式调用
          */
-        ShaderProgram *AddShader(GLSL *shader) {
-            glsl_list.push_back(shader->getName());
+        ShaderProgram *AddShader(GLSL& shader) {
+            glsl_list.push_back(shader.getName());
             std::unordered_set<std::pair<ShaderUniformVar::Type, std::string>> uls(UniformsList.begin(), UniformsList.end()); // 查重
-            uls.insert(shader->getUniformsList().begin(), shader->getUniformsList().end());
+            uls.insert(shader.getUniformsList().begin(), shader.getUniformsList().end());
             UniformsList.assign(uls.begin(), uls.end());
-            glAttachShader(shader_program_id, shader->getShaderID());
+            glAttachShader(shader_program_id, shader.getShaderID());
             return this;
         }
 

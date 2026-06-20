@@ -18,6 +18,8 @@ import CEngine.Node;
 import CEngine.Logger;
 import CEngine.Utils;
 import CEngine.Render;
+import CEngine.RenderUnit;
+
 
 namespace CEngine {
     void ProcessNode(Node *node) {
@@ -132,10 +134,10 @@ namespace CEngine {
         }
     }
 
-    void ProcessRenderUnit3D(RenderUnit3D *ru3d) {
-        if (ImGui::CollapsingHeader("RenderUnit3D", ImGuiTreeNodeFlags_DefaultOpen)) {
+    void ProcessRenderUnit(RenderUnit *ru) {
+        if (ImGui::CollapsingHeader("RenderUnit", ImGuiTreeNodeFlags_DefaultOpen)) {
             if (ImGui::TreeNodeEx("Shader Uniforms Override", ImGuiTreeNodeFlags_DefaultOpen)) {
-                for (auto &[name,suv]: ru3d->getUniforms()) {
+                for (auto &[name,suv]: ru->getUniforms()) {
                     const auto type = suv.GetType();
                     ImGui::BulletText("%s", name.data());
                     ImGui::PushID(name.data());
@@ -201,7 +203,7 @@ namespace CEngine {
                 }
                 ImGui::Separator();
                 int v = 0;
-                for (auto& name : ru3d->getShaderProgramNames()) {
+                for (auto& name : ru->getShaderProgramNames()) {
                     auto sp = ShaderProgram::Get(name);
                     auto it = sp->getUniformsList().cbegin();
                     auto sz = sp->getUniformsList().size();
@@ -213,7 +215,7 @@ namespace CEngine {
                     }, &it, sz + 1)) {
                         if (v >= 1) {
                             const auto item = std::next(it, v - 1);
-                            ru3d->SetShaderUniform(item->second, item->first);
+                            ru->SetShaderUniform(item->second, item->first);
                         }
                     }
                 }
@@ -222,9 +224,9 @@ namespace CEngine {
         }
     }
 
-    void ProcessPBR3D(PBR3D *pbr3d) {
-        Material &material = pbr3d->getMaterial();
-        if (ImGui::CollapsingHeader("PBR3D", ImGuiTreeNodeFlags_DefaultOpen)) {
+    void ProcessPBR(PBR *pbr) {
+        Material &material = pbr->getMaterial();
+        if (ImGui::CollapsingHeader("PBR", ImGuiTreeNodeFlags_DefaultOpen)) {
             if (ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SeparatorText("Parameters");
                 ImGui::Text("Emissive Intensity");
@@ -260,10 +262,12 @@ namespace CEngine {
         if (const auto node3d = dynamic_cast<Node3D *>(node); node3d != nullptr && node3d->IsValid())
             ProcessNode3D(node3d);
 
-        if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr && ru3d->IsValid())
-            ProcessRenderUnit3D(ru3d);
-
-        if (const auto pbr3d = dynamic_cast<PBR3D *>(node); pbr3d != nullptr && pbr3d->IsValid())
-            ProcessPBR3D(pbr3d);
+        if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr && ru3d->IsValid()) {
+            auto ru = ru3d->GetRU();
+            if (ru != nullptr)
+                ProcessRenderUnit(ru);
+            if (auto pbr = dynamic_cast<PBR*>(ru); pbr != nullptr)
+                ProcessPBR(pbr);
+        }
     }
 }

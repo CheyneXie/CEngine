@@ -16,6 +16,7 @@ import std;
 import CEngine.Logger;
 import CEngine.Render;
 import CEngine.Node;
+import CEngine.RenderUnit;
 import CEngine.Utils;
 
 namespace CEngine::ModelImporter {
@@ -61,15 +62,14 @@ namespace CEngine::ModelImporter {
             const auto m = Mesh::Create(vertices, indices);
             m->Name = mesh->mName.data;
             LogS(TAG) << "导入网格: " << m->Name;
+            RenderUnit3D *ru3d;
             switch (render_type) {
                 case RenderType::Base: {
-                    const auto ru3d = RenderUnit3D::Create(m);
-                    n3d->AddChild(ru3d);
+                    ru3d = RenderUnit3D::Create(RenderUnit::Create(m));
                     break;
                 }
                 case RenderType::PBR: {
-                    const auto pbr3d = PBR3D::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path));
-                    n3d->AddChild(pbr3d);
+                    ru3d = RenderUnit3D::Create(PBR::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
                     break;
                 }
                 default: {
@@ -77,6 +77,7 @@ namespace CEngine::ModelImporter {
                     break;
                 }
             }
+            n3d->AddChild(dynamic_cast<Node*>(ru3d));
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
             process_node(node->mChildren[i], scene, n3d, model_path, render_type);

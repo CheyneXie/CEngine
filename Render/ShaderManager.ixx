@@ -46,8 +46,8 @@ namespace CEngine {
                         LogE(TAG) << "着色器编译失败: " << shader_name << " (" << vert_path << ", " << frag_path << ")";
                     }
                     ShaderProgram::Create(shader_name)
-                            ->AddShader(vert.get())
-                            ->AddShader(frag.get())
+                            ->AddShader(*vert)
+                            ->AddShader(*frag)
                             ->Link();
                 }
             }

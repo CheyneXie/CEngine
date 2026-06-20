@@ -8,7 +8,6 @@
 
 module;
 #include <glad/glad.h>
-
 #include <utility>
 export module CEngine.Render:GLSL;
 import :ShaderUniformVar;
@@ -47,7 +46,7 @@ namespace CEngine {
          * @param shader_type 着色器类型（枚举：ShaderType）
          * @param name 异常输出标识
          */
-        static std::shared_ptr<GLSL> FromSource(const std::string &glsl_source, const ShaderType shader_type, const char *name = "源码编译") {
+        static std::optional<GLSL> FromSource(const std::string &glsl_source, const ShaderType shader_type, const char *name = "源码编译") {
             const unsigned int id = glCreateShader(static_cast<GLenum>(shader_type));
             const char *source = glsl_source.c_str();
             glShaderSource(id, 1, &source, nullptr);
@@ -58,9 +57,9 @@ namespace CEngine {
                 char info_log[512];
                 glGetShaderInfoLog(id, 512, nullptr, info_log);
                 LogE(TAG) << "着色器编译错误: " << name << "\nInfoLog: " << info_log;
-                return nullptr;
+                return std::nullopt;
             }
-            return std::make_shared<GLSL>(id, name, GetShaderUniformsFromSource(glsl_source));
+            return std::make_optional<GLSL>(id, name, GetShaderUniformsFromSource(glsl_source));
         }
 
         /**
@@ -68,10 +67,10 @@ namespace CEngine {
          * @param file_path 文件路径
          * @param shader_type 着色器类型（枚举：ShaderType）
          */
-        static std::shared_ptr<GLSL> FromFile(const char *file_path, const ShaderType shader_type) {
+        static std::optional<GLSL> FromFile(const char *file_path, const ShaderType shader_type) {
             if (!Utils::FileExists(file_path)) {
                 LogE(TAG) << "文件不存在: " << file_path;
-                return nullptr;
+                return std::nullopt;
             }
             LogI(TAG) << "正在编译着色器: " << file_path;
             std::ifstream file;
@@ -85,7 +84,7 @@ namespace CEngine {
                 file.close();
             } catch (const std::ifstream::failure &e) {
                 LogE(TAG) << "读取glsl文件时发生错误: " << file_path << "\n错误信息: " << e.what();
-                return nullptr;
+                return std::nullopt;
             }
             return FromSource(glsl_source, shader_type, file_path);
         }

@@ -13,8 +13,7 @@ import :SceneTreeBrowser;
 import std;
 import CEngine.Logger;
 import CEngine.ModelImporter;
-import CEngine.Engine;
-import CEngine.Render;
+import CEngine.RenderUnit;
 
 namespace fs = std::filesystem;
 
