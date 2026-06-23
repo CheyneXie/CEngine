@@ -32,31 +32,31 @@ namespace CEngine {
                     ImGui::BulletText("%s", name.data());
                     ImGui::PushID(name.data());
                     if (param->type == typeid(float)) {
-                        auto p = dynamic_cast<Behaviour::ParamHolder<float>*>(param.get());
+                        auto p = static_cast<Behaviour::ParamHolder<float>*>(param.get());
                         auto v = p->getter();
                         if (ImGui::DragFloat("float", &v, 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
                             p->setter(v);
                         }
                     } else if (param->type == typeid(double)) {
-                        auto p = dynamic_cast<Behaviour::ParamHolder<double>*>(param.get());
+                        auto p = static_cast<Behaviour::ParamHolder<double>*>(param.get());
                         auto v = static_cast<float>(p->getter());
                         if (ImGui::DragFloat("float", &v, 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
                             p->setter(v);
                         }
                     } else if (param->type == typeid(glm::vec2)) {
-                        auto p = dynamic_cast<Behaviour::ParamHolder<glm::vec2>*>(param.get());
+                        auto p = static_cast<Behaviour::ParamHolder<glm::vec2>*>(param.get());
                         auto v = p->getter();
                         if (ImGui::DragFloat2("vec2", glm::value_ptr(v), 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
                             p->setter(v);
                         }
                     } else if (param->type == typeid(glm::vec3)) {
-                        auto p = dynamic_cast<Behaviour::ParamHolder<glm::vec3>*>(param.get());
+                        auto p = static_cast<Behaviour::ParamHolder<glm::vec3>*>(param.get());
                         auto v = p->getter();
                         if (ImGui::ColorEdit3("vec3", glm::value_ptr(v), ImGuiColorEditFlags_Float)) {
                             p->setter(v);
                         }
                     } else if (param->type == typeid(glm::vec4)) {
-                        auto p = dynamic_cast<Behaviour::ParamHolder<glm::vec4>*>(param.get());
+                        auto p = static_cast<Behaviour::ParamHolder<glm::vec4>*>(param.get());
                         auto v = p->getter();
                         if (ImGui::ColorEdit4("vec4", glm::value_ptr(v), ImGuiColorEditFlags_Float)) {
                             p->setter(v);
@@ -73,7 +73,7 @@ namespace CEngine {
             }
             if (ImGui::TreeNodeEx("Info", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::BeginDisabled();
-                ImGui::InputText("Type", const_cast<char *>(node->GetTypeName()), 16, ImGuiInputTextFlags_ReadOnly);
+                ImGui::InputText("Type", const_cast<char *>(GetNodeTypeName(node->GetType())), 16, ImGuiInputTextFlags_ReadOnly);
                 ImGui::EndDisabled();
                 char Name[128];
                 const auto name_str = node->getName();
@@ -224,8 +224,7 @@ namespace CEngine {
         }
     }
 
-    void ProcessPBR(PBR *pbr) {
-        Material &material = pbr->getMaterial();
+    void ProcessMaterial(Material& material) {
         if (ImGui::CollapsingHeader("PBR", ImGuiTreeNodeFlags_DefaultOpen)) {
             if (ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SeparatorText("Parameters");
@@ -259,15 +258,20 @@ namespace CEngine {
         }
         ProcessNode(node);
 
-        if (const auto node3d = dynamic_cast<Node3D *>(node); node3d != nullptr && node3d->IsValid())
-            ProcessNode3D(node3d);
+        if (node->IsType(NodeType::Node3D))
+            ProcessNode3D(static_cast<Node3D*>(node));
 
-        if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr && ru3d->IsValid()) {
+        if (node->IsType(NodeType::RenderUnit3D)) {
+            auto ru3d = static_cast<RenderUnit3D*>(node);
             auto ru = ru3d->GetRU();
-            if (ru != nullptr)
-                ProcessRenderUnit(ru);
-            if (auto pbr = dynamic_cast<PBR*>(ru); pbr != nullptr)
-                ProcessPBR(pbr);
+            if (ru != nullptr) {
+                switch (ru->GetType()) {
+                    case RenderType::Base: ProcessRenderUnit(ru); break;
+                    case RenderType::PBR: ProcessMaterial(static_cast<PBR*>(ru)->getMaterial()); break;
+                    case RenderType::Deferred_PBR: ProcessMaterial(static_cast<Deferred*>(ru)->getMaterial()); break;
+                    default: break;
+                }
+            }
         }
     }
 }

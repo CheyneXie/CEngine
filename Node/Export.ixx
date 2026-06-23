@@ -1,5 +1,6 @@
 module;
 export module CEngine.Node;
+export import :NodeType;
 export import :Node;
 export import :Node3D;
 export import :RenderUnit3D;

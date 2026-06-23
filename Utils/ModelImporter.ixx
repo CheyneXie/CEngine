@@ -59,17 +59,21 @@ namespace CEngine::ModelImporter {
                 for (unsigned int k = 0; k < face.mNumIndices; k++)
                     indices.push_back(face.mIndices[k]);
             }
-            const auto m = Mesh::Create(vertices, indices);
+            auto m = Mesh::Create(vertices, indices);
             m->Name = mesh->mName.data;
             LogS(TAG) << "导入网格: " << m->Name;
             RenderUnit3D *ru3d;
             switch (render_type) {
                 case RenderType::Base: {
-                    ru3d = RenderUnit3D::Create(RenderUnit::Create(m));
+                    ru3d = RenderUnit3D::Create(RenderUnit::Create(std::move(m)));
                     break;
                 }
                 case RenderType::PBR: {
-                    ru3d = RenderUnit3D::Create(PBR::Create(m, Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
+                    ru3d = RenderUnit3D::Create(PBR::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
+                    break;
+                }
+                case RenderType::Deferred_PBR: {
+                    ru3d = RenderUnit3D::Create(Deferred::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
                     break;
                 }
                 default: {
@@ -77,7 +81,7 @@ namespace CEngine::ModelImporter {
                     break;
                 }
             }
-            n3d->AddChild(dynamic_cast<Node*>(ru3d));
+            n3d->AddChild(static_cast<Node*>(ru3d));
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
             process_node(node->mChildren[i], scene, n3d, model_path, render_type);

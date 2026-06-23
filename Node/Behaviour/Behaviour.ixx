@@ -62,11 +62,11 @@ namespace CEngine {
                 LogE(TAG) << "未找到参数: " << name;
                 throw std::runtime_error("[Behaviour]未找到参数");
             }
-            auto* holder = dynamic_cast<ParamHolder<T>*>(it->second.get());
-            if (!holder) {
+            if (it->second->type != typeid(T)) {
                 LogE(TAG) << "参数类型不匹配: " << name;
                 throw std::runtime_error("[Behaviour]参数类型不匹配");
             }
+            auto holder = static_cast<ParamHolder<T>*>(it->second.get());
             return holder->getter();
         }
 
@@ -77,11 +77,11 @@ namespace CEngine {
                 LogE(TAG) << "未找到参数: " << name;
                 throw std::runtime_error("[Behaviour]未找到参数");
             }
-            auto* holder = dynamic_cast<ParamHolder<T>*>(it->second.get());
-            if (!holder) {
+            if (it->second->type != typeid(T)) {
                 LogE(TAG) << "参数类型不匹配: " << name;
                 throw std::runtime_error("[Behaviour]参数类型不匹配");
             }
+            auto holder = static_cast<ParamHolder<T>*>(it->second.get());
             return holder->setter();
         }
 

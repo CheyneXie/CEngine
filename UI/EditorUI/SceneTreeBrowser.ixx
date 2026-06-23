@@ -37,14 +37,14 @@ namespace CEngine {
                 std::string node_name;
                 if (node->GetChildCount() > 0) {
                     if (NodeIsFolding[node]) {
-                        node_name = std::format("{}- ({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
+                        node_name = std::format("{}- ({}) {}", std::string(tab, ' '), GetNodeTypeName(node->GetType()), node->getName());
                         for (auto child: node->GetChildren())
                             stack.push({child, tab + 2});
                     } else {
-                        node_name = std::format("{}+ ({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
+                        node_name = std::format("{}+ ({}) {}", std::string(tab, ' '), GetNodeTypeName(node->GetType()), node->getName());
                     }
                 } else {
-                    node_name = std::format("{}  ({}) {}", std::string(tab, ' '), node->GetTypeName(), node->getName());
+                    node_name = std::format("{}  ({}) {}", std::string(tab, ' '), GetNodeTypeName(node->GetType()), node->getName());
                 }
                 if (ImGui::Selectable(node_name.c_str(), node == NodeSelected)) {
                     if (node != NodeSelected)

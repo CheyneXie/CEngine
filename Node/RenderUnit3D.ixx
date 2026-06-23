@@ -21,9 +21,8 @@ namespace CEngine {
      */
     export class RenderUnit3D : public Node3D {
     public:
-        const char *GetTypeName() override {
-            return "RenderUnit3D";
-        }
+        NodeType GetType() override { return NodeType::RenderUnit3D; }
+        bool IsType(NodeType type) override { return Node3D::IsType(type) || type == NodeType::RenderUnit3D; }
 
         static RenderUnit3D *Create(std::unique_ptr<RenderUnit> ru) {
             return new RenderUnit3D(std::move(ru));
@@ -35,6 +34,7 @@ namespace CEngine {
 
     protected:
         RenderUnit3D(std::unique_ptr<RenderUnit> ru) : RU(std::move(ru)) {
+            assert(RU != nullptr && "RenderUnit3D 需要一个合法的 RenderUnit");
         }
 
         std::unique_ptr<RenderUnit> RU;

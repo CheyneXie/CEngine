@@ -8,6 +8,7 @@
 
 module;
 export module CEngine.Node:Node;
+import :NodeType;
 import :Behaviour;
 import std;
 import CEngine.Base;
@@ -40,9 +41,8 @@ namespace CEngine {
             if (Behaviour) delete Behaviour;
         }
 
-        virtual const char *GetTypeName() {
-            return "Node";
-        }
+        virtual NodeType GetType() { return NodeType::Node; }
+        virtual bool IsType(NodeType type) { return type == NodeType::Node; }
 
         /**
          * 获取子级数量

@@ -35,12 +35,12 @@ namespace CEngine {
         }
 
         /**
-        * @brief 窗口大小被改变
+        * @brief 帧缓冲区大小被改变
         * @param window GLFWwindow* 对象
-        * @param width 窗口宽度
-        * @param height 窗口高度
+        * @param width 宽度
+        * @param height 高度
         */
-        Event<void(void *window, int width, int height)> WindowResized;
+        Event<void(void *window, int width, int height)> FramebufferResized;
         /**
          *  @brief 引擎准备就绪
          */
@@ -69,6 +69,16 @@ namespace CEngine {
          * @brief 着色器程序重新加载
          */
         Event<void()> ShaderReloaded;
+
+        /**
+         * @brief 主动获取 GLFWwindow 指针
+         */
+        Event<void *()> GetWindowPtr;
+
+        /**
+         * @brief 主动获取窗口大小
+         */
+        Event<std::pair<int, int>()> GetFramebufferSize;
 
         // ===================== Input ======================
 

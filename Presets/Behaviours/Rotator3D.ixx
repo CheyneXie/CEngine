@@ -26,11 +26,11 @@ namespace CEngine {
         }
 
         bool Ready() override {
-            p3d = dynamic_cast<Node3D *>(ParentNode);
-            if (p3d == nullptr) {
+            if (!ParentNode->IsType(NodeType::Node3D)) {
                 ParentNode->SetBehaviour(nullptr);
                 return false;
             }
+            p3d = static_cast<Node3D *>(ParentNode);
             return true;
         }
 

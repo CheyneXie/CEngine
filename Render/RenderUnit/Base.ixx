@@ -11,6 +11,7 @@ module;
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 export module CEngine.RenderUnit:Base;
+import :RenderType;
 import CEngine.Base;
 import CEngine.Render;
 import CEngine.Logger;
@@ -19,32 +20,66 @@ import std;
 namespace CEngine {
     export class RenderUnit : public Object {
     public:
-        static std::unique_ptr<RenderUnit> Create(Mesh *m) {
-            return std::unique_ptr<RenderUnit>(new RenderUnit(m));
+        virtual RenderType GetType() { return RenderType::Base; }
+
+        static std::unique_ptr<RenderUnit> Create(std::shared_ptr<Mesh> m) {
+            return std::unique_ptr<RenderUnit>(new RenderUnit(std::move(m)));
         }
 
-        void RenderUtil_SetBasicsMartrix(ShaderProgram *sp, const glm::mat4 &worldM, const glm::mat4 &viewM, const glm::mat4 &projectM) {
-            sp->SetUniform(0, worldM);
+        /**
+         * @brief 批渲染
+         * 
+         * @param RUS 
+         * @param viewM 视图矩阵
+         * @param projectM 投影矩阵
+         */
+        static void RenderAll(std::vector<RenderUnit*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
+            for (auto ru : RUS) {
+                ru->Render(viewM, projectM, sp);
+            }
+        }
+
+        /**
+         * @brief 执行渲染
+         * 
+         * @param viewM 视图矩阵
+         * @param projectM 投影矩阵
+         * @param sp 用于批渲染时传入
+         */
+        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, ShaderProgram *sp = nullptr) {
+            if (sp == nullptr)
+                sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
+            sp->SetUniform(0, WorldMatrix);
+            RenderUtil_SetShaderUniform(sp);
+            mesh->Render();
+        }
+
+        /**
+         * @brief 工具函数：获取着色器程序并设置基础数据
+         * 
+         * @param viewM 视图矩阵
+         * @param projectM 投影矩阵
+         * @return ShaderProgram* 
+         */
+        static ShaderProgram *RenderUtil_GetShaderProgramWithBasicsData(const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            auto sp = ShaderProgram::Get("Base");
+            sp->Use();
             sp->SetUniform(1, viewM);
             sp->SetUniform(2, projectM);
+            return sp;
         }
 
+        /**
+         * @brief 工具函数：设置 Uniform
+         * 
+         * @param sp 着色器程序
+         */
         void RenderUtil_SetShaderUniform(ShaderProgram *sp) {
             if (!uniforms.empty())
                 for (auto& [name, value]: uniforms) {
                     sp->SetShaderUniformVar(name.c_str(), value);
                 }
-        }
-
-        /**
-         * 执行渲染
-         */
-        void Render(const glm::mat4 &worldM, const glm::mat4 &viewM, const glm::mat4 &projectM) {
-            auto sp = ShaderProgram::Get("Base");
-            sp->Use();
-            RenderUtil_SetBasicsMartrix(sp, worldM, viewM, projectM);
-            RenderUtil_SetShaderUniform(sp);
-            mesh->Render();
         }
 
         /**
@@ -60,7 +95,7 @@ namespace CEngine {
         }
 
         /// @property mesh
-        Mesh *getMesh() const { return mesh; }
+        const std::shared_ptr<Mesh>& getMesh() const { return mesh; }
 
         /// @property shader_program
         const std::vector<std::string_view>& getShaderProgramNames() const { return shader_program_names; }
@@ -73,12 +108,14 @@ namespace CEngine {
         RenderUnit(RenderUnit&&) = default;
         RenderUnit& operator=(RenderUnit&&) = default;
 
+        glm::mat4 WorldMatrix;
+
     protected:
-        RenderUnit(Mesh *m) : mesh(m) {
+        RenderUnit(std::shared_ptr<Mesh> m) : mesh(std::move(m)) {
             shader_program_names = { "Base" };
         }
 
-        Mesh *mesh;
+        std::shared_ptr<Mesh> mesh;
         std::vector<std::string_view> shader_program_names;
         std::unordered_map<std::string, ShaderUniformVar, StringHash, StringEqual> uniforms;
     };

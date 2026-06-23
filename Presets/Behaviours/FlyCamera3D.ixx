@@ -33,11 +33,11 @@ namespace CEngine {
         }
 
         bool Ready() override {
-            p3d = dynamic_cast<Camera3D *>(ParentNode);
-            if (p3d == nullptr) {
+            if (!ParentNode->IsType(NodeType::Camera3D)) {
                 ParentNode->SetBehaviour(nullptr);
                 return false;
             }
+            p3d = static_cast<Camera3D *>(ParentNode);
             EventBus().MouseScrollEvent += std::tuple(this, &FlyCamera3D::MouseScrollEvent);
             return true;
         }

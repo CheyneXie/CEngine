@@ -24,9 +24,8 @@ namespace CEngine {
             return new Node3D();
         }
 
-        const char *GetTypeName() override {
-            return "Node3D";
-        }
+        NodeType GetType() override { return NodeType::Node3D; }
+        bool IsType(NodeType type) override { return Node::IsType(type) || type == NodeType::Node3D; }
 
         virtual Node3D &SetPosition(const glm::vec3 &p, const bool updateM = true) {
             Position = p;
@@ -83,8 +82,8 @@ namespace CEngine {
             auto matrix = ModelMatrix;
             auto parent = Parent;
             while (parent != nullptr) {
-                if (const auto n3d = dynamic_cast<Node3D *>(parent); n3d != nullptr) {
-                    matrix = n3d->GetWorldMatrix() * matrix;
+                if (parent->IsType(NodeType::Node3D)) {
+                    matrix = static_cast<Node3D*>(parent)->GetWorldMatrix() * matrix;
                 }
                 parent = parent->getParent();
             }

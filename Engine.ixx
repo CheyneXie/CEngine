@@ -168,28 +168,50 @@ namespace CEngine {
     }
 
     void Engine::Ready() {
-        // 窗口大小改变事件
-        glfwSetFramebufferSizeCallback(window, [](GLFWwindow *_window, const int _width, int _height) {
-            glViewport(0, 0, _width, _height);
-            LogI(TAG) << "设置Viewport: " << _width << "x" << _height;
-            EventBus().WindowResized.Invoke(_window, _width, _height);
-        });
         // 背面剔除
         glEnable(GL_CULL_FACE);
+
         // 深度测试
         glEnable(GL_DEPTH_TEST);
+
         // 打印最大Uniform数量
         GLint maxUniformLocations;
         glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &maxUniformLocations);
         LogI(TAG) << "当前设备最大Uniform数量: " << maxUniformLocations;
-        // 编译着色器
-        ShaderManager::LoadShaderProgram();
+
+        // GBuffer
+        // int width, height;
+        // glfwGetFramebufferSize(window, &width, &height);
+        // GBuffer::Init(window, width, height);
+        EventBus().FramebufferResized += GBuffer::Init;
+
+        // 主动获取 GLFWwindow 指针
+        EventBus().GetWindowPtr += [this]() { return this->window; };
+
+        // 窗口大小改变事件
+        glfwSetFramebufferSizeCallback(window, [](GLFWwindow *_window, int _width, int _height) {
+            glViewport(0, 0, _width, _height);
+            LogI(TAG) << "设置Viewport: " << _width << "x" << _height;
+            EventBus().FramebufferResized.Invoke(_window, _width, _height);
+        });
+
+        // 主动获取窗口大小
+        EventBus().GetFramebufferSize += [this]() {
+            int width, height;
+            glfwGetFramebufferSize(this->window, &width, &height);
+            return std::make_pair(width, height);
+        };
+
         // 订阅Camera激活事件
-        EventBus().CameraActivated += [&](void *cam) {
+        EventBus().CameraActivated += [this](void *cam) {
             LogI(TAG) << "活动相机变更";
             this->CurrentCamera = static_cast<Camera *>(cam);
             this->CurrentCamera3D = dynamic_cast<Camera3D *>(this->CurrentCamera);
         };
+
+        // 编译着色器
+        ShaderManager::LoadShaderProgram();
+
         // 触发Event
         EventBus().EngineReady.Invoke();
     }
@@ -221,16 +243,29 @@ namespace CEngine {
             if (node->GetChildCount() > 0)
                 for (const auto child: node->GetChildren())
                     stack.push(child);
+
+            // Behaviour
             if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)
                 behaviour->Process(DeltaTime);
-            if (const auto ru3d = dynamic_cast<RenderUnit3D *>(node); ru3d != nullptr) {
-                auto worldM = ru3d->GetWorldMatrix();
-                if (auto ru = ru3d->GetRU(); ru != nullptr) {
-                    if (auto pbr = dynamic_cast<PBR*>(ru); pbr != nullptr)
-                        pbr->Render(worldM, viewM, projectM, CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero);
-                    else
-                        ru->Render(worldM, viewM, projectM);
+
+            // RenderUnit
+            if (node->IsType(NodeType::RenderUnit3D)) {
+                auto ru3d = static_cast<RenderUnit3D *>(node);
+                auto ru = ru3d->GetRU();
+                ru->WorldMatrix = ru3d->GetWorldMatrix();
+                std::vector<std::vector<RenderUnit *>> RUS(static_cast<int>(RenderType::Count));
+                switch (ru->GetType()) {
+                    case RenderType::Base: RUS[static_cast<int>(RenderType::Base)].push_back(ru); break;
+                    case RenderType::PBR: RUS[static_cast<int>(RenderType::PBR)].push_back(ru); break;
+                    case RenderType::Deferred_PBR: RUS[static_cast<int>(RenderType::Deferred_PBR)].push_back(ru); break;
+                    default: break;
                 }
+
+                auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
+                RenderUnit::RenderAll(RUS[static_cast<int>(RenderType::Base)], viewM, projectM);
+                PBR::RenderAll(RUS[static_cast<int>(RenderType::PBR)], viewM, projectM, camPos);
+                Deferred::RenderAll(RUS[static_cast<int>(RenderType::Deferred_PBR)], viewM, projectM, camPos);
+
                 DrawCallEnd();
             }
         }
@@ -245,6 +280,7 @@ namespace CEngine {
         delete RootNode;
         delete ui;
         UI::Destroy();
+        Mesh::Cleanup();
     }
 
     std::pair<int, int> Engine::GetScreenSize() const {

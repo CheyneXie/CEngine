@@ -45,6 +45,10 @@ namespace CEngine {
             Texture::Create("<DefalueNormal>", {1, 1, data4, ColorMode::RGB}); // Defalue Normal
             delete[] data4;
         }
+
+        static void LoadEngineMesh() {
+            
+        }
     };
 
     const char *PresetsLoader::TAG = "预设加载器";

@@ -49,7 +49,6 @@ namespace CEngine {
     export class Mesh final : public Object {
     public:
         const static char *TAG;
-        static std::vector<Mesh *> All_Instances;
 
         Mesh(const Mesh &other) = delete;
         Mesh(Mesh &&other) = delete;
@@ -63,11 +62,43 @@ namespace CEngine {
         };
 
         /**
+         * @brief 创建用户 Mesh
+         * 
          * @param vbi 顶点信息数据
          * @param ebi 索引数据
          */
-        static Mesh *Create(const std::vector<VertexInfo> &vbi, const std::vector<unsigned int> &ebi) {
-            return new Mesh(vbi, ebi);
+        static std::shared_ptr<Mesh> Create(const std::vector<VertexInfo> &vbi, const std::vector<unsigned int> &ebi) {
+            auto mesh = std::shared_ptr<Mesh>(new Mesh(vbi, ebi));
+            LoadedMeshes.push_back(mesh);
+            return mesh;
+        }
+
+        /**
+         * @brief 创建引擎 Mesh
+         * 
+         * @param vbi 顶点信息数据
+         * @param ebi 索引数据
+         */
+        static void CreateEngineMesh(std::string_view name, const std::vector<VertexInfo> &vbi, const std::vector<unsigned int> &ebi) {
+            EngineMeshes.emplace(name, new Mesh(vbi, ebi));
+        }
+
+        /**
+         * @brief 获取所有已加载 Mesh
+         * 
+         * @return std::vector<std::weak_ptr<Mesh>>& 
+         */
+        static std::vector<std::weak_ptr<Mesh>>& GetAllIns() {
+            Cleanup();
+            return LoadedMeshes;
+        }
+
+        /**
+         * @brief 清理失效引用
+         */
+        static void Cleanup() {
+            auto end = std::remove_if(LoadedMeshes.begin(), LoadedMeshes.end(), [](auto mesh) { return mesh.expired(); });
+            LoadedMeshes.erase(end, LoadedMeshes.end());
         }
 
         /**
@@ -83,6 +114,16 @@ namespace CEngine {
         std::string Name;
 
     protected:
+        /**
+         * @brief 用户 Mesh
+         */
+        static std::vector<std::weak_ptr<Mesh>> LoadedMeshes;
+        /**
+         * @brief 引擎 Mesh，不受智能指针管理
+         * 
+         */
+        static std::unordered_map<std::string, Mesh *, StringHash, StringEqual> EngineMeshes;
+
         /**
          * @param vbi 顶点信息数据
          * @param ebi 索引数据
@@ -117,7 +158,6 @@ namespace CEngine {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_size * sizeof(unsigned int), ebi.data(), GL_STATIC_DRAW);
             // 解绑VAO
             glBindVertexArray(0);
-            All_Instances.push_back(this);
         };
         /// @brief VAO
         unsigned int VAO = 0;
@@ -130,5 +170,6 @@ namespace CEngine {
     };
 
     const char *Mesh::TAG = "Mesh";
-    std::vector<Mesh *> Mesh::All_Instances;
+    std::vector<std::weak_ptr<Mesh>> Mesh::LoadedMeshes;
+    std::unordered_map<std::string, Mesh *, StringHash, StringEqual> Mesh::EngineMeshes;
 }

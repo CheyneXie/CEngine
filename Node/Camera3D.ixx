@@ -19,9 +19,8 @@ namespace CEngine {
             return new Camera3D(fov, aspect_ratio, z_near, z_far);
         }
 
-        const char *GetTypeName() override {
-            return "Camera3D";
-        }
+        NodeType GetType() override { return NodeType::Camera3D; }
+        bool IsType(NodeType type) override { return Node3D::IsType(type) || type == NodeType::Camera3D; }
 
         void UpdateViewMatrix() {
             ViewMatrix = Camera::GetViewMatrix(Position, -GetForward(true), GetUp(true));

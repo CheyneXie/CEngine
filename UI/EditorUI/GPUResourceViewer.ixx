@@ -12,6 +12,7 @@ module;
 export module CEngine.EditorUI:GPUResourceViewer;
 import std;
 import CEngine.Render;
+import CEngine.RenderUnit;
 import CEngine.Utils;
 
 namespace CEngine {
@@ -21,6 +22,7 @@ namespace CEngine {
     public:
         ShaderProgram *SelectedShaderProgram = nullptr;
         Texture *SelectedTexture = nullptr;
+        unsigned int SelectedGBuffer = 0;
 
         GPUResourceViewer() = default;
 
@@ -124,7 +126,9 @@ namespace CEngine {
                         }
                         ImGui::SeparatorText("Preview");
                         auto id = SelectedTexture->getTextureID();
-                        ImGui::Image(static_cast<ImTextureID>(SelectedTexture->getTextureID()), ImVec2(SelectedTexture->getWidth(), SelectedTexture->getHeight()));
+                        float available_width = ImGui::GetContentRegionAvail().x;
+                        float display_height = available_width * ((float)SelectedTexture->getHeight() / (float)SelectedTexture->getWidth());
+                        ImGui::Image(static_cast<ImTextureID>(SelectedTexture->getTextureID()), ImVec2(available_width, display_height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
                     } else {
                         ImGui::Text("Please select a item.");
                     }
@@ -132,7 +136,29 @@ namespace CEngine {
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Mesh")) {
-                    ImGui::Text("Mesh count: %lu", Mesh::All_Instances.size());
+                    ImGui::Text("Mesh count: %lu", Mesh::GetAllIns().size());
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("GBuffer")) {
+                    ImGui::BeginChild("##GBuffer#List", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, 0), ImGuiWindowFlags_NoResize);
+                    if (ImGui::BeginListBox("##GBuffer#ListBox", ImVec2(-FLT_MIN, -FLT_MIN))) {
+                        for (auto &[name, tex]: GBuffer().MakeInfoForUI())
+                            if (ImGui::Selectable(name, tex == SelectedGBuffer))
+                                SelectedGBuffer = tex;
+                        ImGui::EndListBox();
+                    }
+                    ImGui::EndChild();
+                    ImGui::SameLine();
+                    ImGui::BeginChild("##GBuffer#Show", ImVec2(0, 0), ImGuiWindowFlags_NoResize);
+                    if (SelectedGBuffer != 0) {
+                        auto size = GBuffer().GetSize();
+                        float available_width = ImGui::GetContentRegionAvail().x;
+                        float display_height = available_width * ((float)size.second / (float)size.first);
+                        ImGui::Image(static_cast<ImTextureID>(SelectedGBuffer), ImVec2(available_width, display_height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+                    } else {
+                        ImGui::Text("Please select a item.");
+                    }
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
