@@ -142,7 +142,7 @@ namespace CEngine {
                 if (ImGui::BeginTabItem("GBuffer")) {
                     ImGui::BeginChild("##GBuffer#List", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, 0), ImGuiWindowFlags_NoResize);
                     if (ImGui::BeginListBox("##GBuffer#ListBox", ImVec2(-FLT_MIN, -FLT_MIN))) {
-                        for (auto &[name, tex]: GBuffer().MakeInfoForUI())
+                        for (auto &[name, tex]: RenderUnit::GBuffer().MakeInfoForUI())
                             if (ImGui::Selectable(name, tex == SelectedGBuffer))
                                 SelectedGBuffer = tex;
                         ImGui::EndListBox();
@@ -151,7 +151,7 @@ namespace CEngine {
                     ImGui::SameLine();
                     ImGui::BeginChild("##GBuffer#Show", ImVec2(0, 0), ImGuiWindowFlags_NoResize);
                     if (SelectedGBuffer != 0) {
-                        auto size = GBuffer().GetSize();
+                        auto size = RenderUnit::GBuffer().GetSize();
                         float available_width = ImGui::GetContentRegionAvail().x;
                         float display_height = available_width * ((float)size.second / (float)size.first);
                         ImGui::Image(static_cast<ImTextureID>(SelectedGBuffer), ImVec2(available_width, display_height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));

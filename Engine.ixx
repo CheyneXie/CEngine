@@ -183,7 +183,7 @@ namespace CEngine {
         // int width, height;
         // glfwGetFramebufferSize(window, &width, &height);
         // GBuffer::Init(window, width, height);
-        EventBus().FramebufferResized += GBuffer::Init;
+        EventBus().FramebufferResized += RenderUnit::GBuffer::Init;
 
         // 主动获取 GLFWwindow 指针
         EventBus().GetWindowPtr += [this]() { return this->window; };
@@ -252,19 +252,18 @@ namespace CEngine {
             if (node->IsType(NodeType::RenderUnit3D)) {
                 auto ru3d = static_cast<RenderUnit3D *>(node);
                 auto ru = ru3d->GetRU();
-                ru->WorldMatrix = ru3d->GetWorldMatrix();
-                std::vector<std::vector<RenderUnit *>> RUS(static_cast<int>(RenderType::Count));
+                std::vector<std::vector<RenderUnit::Base *>> RUS(static_cast<int>(RenderUnit::Type::Count));
                 switch (ru->GetType()) {
-                    case RenderType::Base: RUS[static_cast<int>(RenderType::Base)].push_back(ru); break;
-                    case RenderType::PBR: RUS[static_cast<int>(RenderType::PBR)].push_back(ru); break;
-                    case RenderType::Deferred_PBR: RUS[static_cast<int>(RenderType::Deferred_PBR)].push_back(ru); break;
+                    case RenderUnit::Type::Base: RUS[static_cast<int>(RenderUnit::Type::Base)].push_back(ru); break;
+                    case RenderUnit::Type::PBR: RUS[static_cast<int>(RenderUnit::Type::PBR)].push_back(ru); break;
+                    case RenderUnit::Type::Deferred_PBR: RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)].push_back(ru); break;
                     default: break;
                 }
 
                 auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
-                RenderUnit::RenderAll(RUS[static_cast<int>(RenderType::Base)], viewM, projectM);
-                PBR::RenderAll(RUS[static_cast<int>(RenderType::PBR)], viewM, projectM, camPos);
-                Deferred::RenderAll(RUS[static_cast<int>(RenderType::Deferred_PBR)], viewM, projectM, camPos);
+                RenderUnit::Base::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Base)], viewM, projectM);
+                RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM, camPos);
+                RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM, camPos);
 
                 DrawCallEnd();
             }

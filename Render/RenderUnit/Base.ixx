@@ -11,19 +11,19 @@ module;
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 export module CEngine.RenderUnit:Base;
-import :RenderType;
+import :Type;
 import CEngine.Base;
 import CEngine.Render;
 import CEngine.Logger;
 import std;
 
-namespace CEngine {
-    export class RenderUnit : public Object {
+namespace CEngine::RenderUnit {
+    export class Base : public Object {
     public:
-        virtual RenderType GetType() { return RenderType::Base; }
+        virtual Type GetType() { return Type::Base; }
 
-        static std::unique_ptr<RenderUnit> Create(std::shared_ptr<Mesh> m) {
-            return std::unique_ptr<RenderUnit>(new RenderUnit(std::move(m)));
+        static std::unique_ptr<Base> Create(std::shared_ptr<Mesh> m) {
+            return std::unique_ptr<Base>(new Base(std::move(m)));
         }
 
         /**
@@ -33,7 +33,7 @@ namespace CEngine {
          * @param viewM 视图矩阵
          * @param projectM 投影矩阵
          */
-        static void RenderAll(std::vector<RenderUnit*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
+        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
             auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             for (auto ru : RUS) {
                 ru->Render(viewM, projectM, sp);
@@ -103,15 +103,15 @@ namespace CEngine {
         /// @property uniforms
         std::unordered_map<std::string, ShaderUniformVar, StringHash, StringEqual> &getUniforms() { return uniforms; }
 
-        RenderUnit(const RenderUnit&) = delete;
-        RenderUnit& operator=(const RenderUnit&) = delete;
-        RenderUnit(RenderUnit&&) = default;
-        RenderUnit& operator=(RenderUnit&&) = default;
+        Base(const Base&) = delete;
+        Base& operator=(const Base&) = delete;
+        Base(Base&&) = default;
+        Base& operator=(Base&&) = default;
 
         glm::mat4 WorldMatrix;
 
     protected:
-        RenderUnit(std::shared_ptr<Mesh> m) : mesh(std::move(m)) {
+        Base(std::shared_ptr<Mesh> m) : mesh(std::move(m)) {
             shader_program_names = { "Base" };
         }
 

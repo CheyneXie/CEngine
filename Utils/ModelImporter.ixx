@@ -22,7 +22,7 @@ import CEngine.Utils;
 namespace CEngine::ModelImporter {
     auto TAG = "ModelImporter";
 
-    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, const char *model_path, RenderType render_type, const float transform_scale = 1.0f) {
+    void process_node(const aiNode *node, const aiScene *scene, Node3D *parent, const char *model_path, RenderUnit::Type render_type, const float transform_scale = 1.0f) {
         auto n3d = Node3D::Create();
         n3d->setName(node->mName.data);
         if (transform_scale == 1.0f)
@@ -64,16 +64,16 @@ namespace CEngine::ModelImporter {
             LogS(TAG) << "导入网格: " << m->Name;
             RenderUnit3D *ru3d;
             switch (render_type) {
-                case RenderType::Base: {
-                    ru3d = RenderUnit3D::Create(RenderUnit::Create(std::move(m)));
+                case RenderUnit::Type::Base: {
+                    ru3d = RenderUnit3D::Create(RenderUnit::Base::Create(std::move(m)));
                     break;
                 }
-                case RenderType::PBR: {
-                    ru3d = RenderUnit3D::Create(PBR::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
+                case RenderUnit::Type::PBR: {
+                    ru3d = RenderUnit3D::Create(RenderUnit::PBR::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
                     break;
                 }
-                case RenderType::Deferred_PBR: {
-                    ru3d = RenderUnit3D::Create(Deferred::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
+                case RenderUnit::Type::Deferred_PBR: {
+                    ru3d = RenderUnit3D::Create(RenderUnit::Deferred::Create(std::move(m), Material::ProcessAssimpMaterial(scene->mMaterials[mesh->mMaterialIndex], model_path)));
                     break;
                 }
                 default: {
@@ -89,7 +89,7 @@ namespace CEngine::ModelImporter {
         parent->AddChild(std::move(n3d));
     }
 
-    export Node3D *import_model(const char *file_path, RenderType render_type = RenderType::Base, float transform_scale = 1.0f) {
+    export Node3D *import_model(const char *file_path, RenderUnit::Type render_type = RenderUnit::Type::Base, float transform_scale = 1.0f) {
         if (!Utils::FileExists(file_path)) {
             LogE(TAG) << "文件不存在: " << file_path;
             return nullptr;

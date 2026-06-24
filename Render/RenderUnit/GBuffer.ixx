@@ -22,7 +22,7 @@ import std;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); \
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-namespace CEngine {
+namespace CEngine::RenderUnit {
     export class GBuffer : public Object {
     public:
         static GBuffer* Get() {

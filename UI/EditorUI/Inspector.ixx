@@ -134,7 +134,7 @@ namespace CEngine {
         }
     }
 
-    void ProcessRenderUnit(RenderUnit *ru) {
+    void ProcessRenderUnit(RenderUnit::Base *ru) {
         if (ImGui::CollapsingHeader("RenderUnit", ImGuiTreeNodeFlags_DefaultOpen)) {
             if (ImGui::TreeNodeEx("Shader Uniforms Override", ImGuiTreeNodeFlags_DefaultOpen)) {
                 for (auto &[name,suv]: ru->getUniforms()) {
@@ -266,9 +266,9 @@ namespace CEngine {
             auto ru = ru3d->GetRU();
             if (ru != nullptr) {
                 switch (ru->GetType()) {
-                    case RenderType::Base: ProcessRenderUnit(ru); break;
-                    case RenderType::PBR: ProcessMaterial(static_cast<PBR*>(ru)->getMaterial()); break;
-                    case RenderType::Deferred_PBR: ProcessMaterial(static_cast<Deferred*>(ru)->getMaterial()); break;
+                    case RenderUnit::Type::Base: ProcessRenderUnit(ru); break;
+                    case RenderUnit::Type::PBR: ProcessMaterial(static_cast<RenderUnit::PBR*>(ru)->getMaterial()); break;
+                    case RenderUnit::Type::Deferred_PBR: ProcessMaterial(static_cast<RenderUnit::Deferred*>(ru)->getMaterial()); break;
                     default: break;
                 }
             }

@@ -15,11 +15,10 @@ import :Base;
 import :GBuffer;
 import CEngine.Render;
 
-
-namespace CEngine {
-    export class Deferred : public RenderUnit {
+namespace CEngine::RenderUnit {
+    export class Deferred : public Base {
     public:
-        RenderType GetType() override { return RenderType::Deferred_PBR; }
+        Type GetType() override { return Type::Deferred_PBR; }
 
         static std::unique_ptr<Deferred> Create(std::shared_ptr<Mesh> m, Material &&mat) {
             return std::unique_ptr<Deferred>(new Deferred(std::move(m), std::move(mat)));
@@ -33,7 +32,7 @@ namespace CEngine {
          * @param projectM 投影矩阵
          * @param camPos 相机位置
          */
-        static void RenderAll(std::vector<RenderUnit*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
             GBuffer().Bind();
             auto sp_geo = RenderUtil_GetShaderProgramWithBasicsData_Geometry(viewM, projectM);
             for (auto ru : RUS) {
@@ -99,7 +98,7 @@ namespace CEngine {
         }
 
     protected:
-        Deferred(std::shared_ptr<Mesh> m, Material &&mat) : RenderUnit(std::move(m)), Mat(std::move(mat)) {
+        Deferred(std::shared_ptr<Mesh> m, Material &&mat) : Base(std::move(m)), Mat(std::move(mat)) {
             shader_program_names = { "Deferred-Geometry"/*, "Deferred-Lighting"*/ };
         }
 

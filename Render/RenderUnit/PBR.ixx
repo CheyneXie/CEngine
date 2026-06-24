@@ -13,10 +13,10 @@ export module CEngine.RenderUnit:PBR;
 import :Base;
 import CEngine.Render;
 
-namespace CEngine {
-    export class PBR final : public RenderUnit {
+namespace CEngine::RenderUnit {
+    export class PBR final : public Base {
     public:
-        RenderType GetType() override { return RenderType::PBR; }
+        Type GetType() override { return Type::PBR; }
 
         static std::unique_ptr<PBR> Create(std::shared_ptr<Mesh> m, Material &&mat) {
             return std::unique_ptr<PBR>(new PBR(std::move(m), std::move(mat)));
@@ -30,7 +30,7 @@ namespace CEngine {
          * @param projectM 投影矩阵
          * @param camPos 相机位置
          */
-        static void RenderAll(std::vector<RenderUnit*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
             auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM, camPos);
             for (auto ru : RUS) {
                 static_cast<PBR*>(ru)->Render(viewM, projectM, camPos, sp);
@@ -76,7 +76,7 @@ namespace CEngine {
         }
 
     protected:
-        PBR(std::shared_ptr<Mesh> m, Material &&mat) : RenderUnit(std::move(m)), Mat(std::move(mat)) {
+        PBR(std::shared_ptr<Mesh> m, Material &&mat) : Base(std::move(m)), Mat(std::move(mat)) {
             shader_program_names = { "PBR" };
         }
 

@@ -11,6 +11,7 @@ module;
 #include <glm/gtc/quaternion.hpp>
 export module CEngine.Node:Node3D;
 import :Node;
+import CEngine.Base;
 import CEngine.Utils;
 
 namespace CEngine {
@@ -26,6 +27,8 @@ namespace CEngine {
 
         NodeType GetType() override { return NodeType::Node3D; }
         bool IsType(NodeType type) override { return Node::IsType(type) || type == NodeType::Node3D; }
+
+        Event<void(Node3D*)> Event_ModelMatrixUpdated;
 
         virtual Node3D &SetPosition(const glm::vec3 &p, const bool updateM = true) {
             Position = p;
@@ -49,6 +52,7 @@ namespace CEngine {
             // 平移矩阵 * 旋转矩阵 * 缩放矩阵
             // ModelMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::mat4_cast(Rotation.ToOrientation()) * glm::scale(glm::mat4(1.0f), Scale);
             ModelMatrix = glm::mat4_cast(Rotation.ToOrientation()) * glm::translate(glm::mat4(1.0f), Position) * glm::scale(glm::mat4(1.0f), Scale);
+            Event_ModelMatrixUpdated.Invoke(this);
             return *this;
         }
 
@@ -136,7 +140,21 @@ namespace CEngine {
         }
 
     protected:
-        Node3D() = default;
+        Node3D() {
+            // 传递事件
+            Event_ModelMatrixUpdated += [this](Node3D *who) {
+                std::ranges::for_each(
+                    this->Children |
+                    std::views::values |
+                    std::views::filter([](Node *n){
+                        return n->IsType(NodeType::Node);
+                    }),
+                    [who](Node *n) {
+                        static_cast<Node3D*>(n)->Event_ModelMatrixUpdated.Invoke(who);
+                    }
+                );
+            };
+        };
         /// 局部变换矩阵
         glm::mat4 ModelMatrix = glm::mat4(1.0f);
         /// 坐标
