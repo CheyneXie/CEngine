@@ -7,8 +7,9 @@
  */
 
 export module CEngine.Image:Image;
-import :Pixel;
 import :ImageBuffer;
+import CEngine.Base;
+import std;
 
 namespace CEngine {
     export class Image {

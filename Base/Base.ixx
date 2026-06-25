@@ -12,6 +12,7 @@ module;
 export module CEngine.Base;
 export import :Object;
 export import :Event;
+export import :Pixel;
 import std;
 
 namespace CEngine {
@@ -46,6 +47,10 @@ namespace CEngine {
 
         glm::vec3 ToDegreesVec3XYZ() const {
             return {glm::degrees(Pitch), glm::degrees(Yaw), glm::degrees(Roll)};
+        }
+
+        glm::vec3 RotateVector(const glm::vec3&& vector) const {
+            return ToOrientation() * vector;
         }
     };
 

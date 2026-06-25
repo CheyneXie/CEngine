@@ -8,6 +8,7 @@
 
 export module CEngine.PresetsLoader;
 import std;
+import CEngine.Base;
 import CEngine.Render;
 import CEngine.Image;
 import CEngine.Node;

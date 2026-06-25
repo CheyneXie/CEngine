@@ -14,6 +14,7 @@ export module CEngine.RenderUnit:Deferred;
 import :Base;
 import :GBuffer;
 import CEngine.Render;
+import CEngine.Light;
 
 namespace CEngine::RenderUnit {
     export class Deferred : public Base {
@@ -30,16 +31,16 @@ namespace CEngine::RenderUnit {
          * @param RUS 
          * @param viewM 视图矩阵
          * @param projectM 投影矩阵
-         * @param camPos 相机位置
          */
-        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
             GBuffer().Bind();
             auto sp_geo = RenderUtil_GetShaderProgramWithBasicsData_Geometry(viewM, projectM);
             for (auto ru : RUS) {
                 static_cast<Deferred*>(ru)->RenderGeometry(viewM, projectM, sp_geo);
+                Texture::ResetTextureSlot();
             }
             GBuffer().Unbind();
-            // RenderLighting(viewM, projectM, camPos);
+            // RenderLighting(viewM, projectM);
         }
 
         /**
@@ -57,6 +58,7 @@ namespace CEngine::RenderUnit {
             Mat.Use(sp);
             RenderUtil_SetShaderUniform(sp);
             mesh->Render();
+            RenderUtil_ResetShaderUniform(sp);
         }
 
         /**
@@ -79,15 +81,13 @@ namespace CEngine::RenderUnit {
          * 
          * @param viewM 视图矩阵
          * @param projectM 透视矩阵
-         * @param camPos 相机位置
          */
-        static void RenderLighting(const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static void RenderLighting(const glm::mat4 &viewM, const glm::mat4 &projectM) {
             glDisable(GL_DEPTH_TEST);
             auto sp = ShaderProgram::Get("Deferred-Lighting");
             sp->Use();
             sp->SetUniform(0, viewM);
             sp->SetUniform(1, projectM);
-            sp->SetUniform("CameraPosition", camPos);
             GBuffer().Use(sp);
             // Mesh::All_Instances
             glEnable(GL_DEPTH_TEST);

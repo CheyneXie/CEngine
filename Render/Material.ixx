@@ -124,14 +124,9 @@ namespace CEngine {
          * 材质参数Uniform结构索引 (使用函数<code>glGetUniformBlockIndex()</code>) \n
          * 若不传参，则自动搜索结构<code>Material_Parameters</code>
          */
-        void Use(const ShaderProgram *shader, const int material_parameters_uniform_block_index = -1) const {
+        void Use(const ShaderProgram *shader) const {
             const auto shader_id = shader->getShaderProgramID();
-            const unsigned int i = material_parameters_uniform_block_index < 0
-                                       ? glGetUniformBlockIndex(shader_id, "Material_Parameters")
-                                       : material_parameters_uniform_block_index;
-            // TODO 避免固定BINDING_POINT
-            constexpr unsigned int BINDING_POINT = 0;
-            glUniformBlockBinding(shader_id, i, BINDING_POINT);
+            constexpr unsigned int BINDING_POINT = 2;
             glBindBufferBase(GL_UNIFORM_BUFFER, BINDING_POINT, UBO_Parameters);
 
             /* 寻址法 */

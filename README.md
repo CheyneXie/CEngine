@@ -26,8 +26,11 @@ int main(){
     const auto engine = CEngine::Engine::GetIns();
     // 设置UI
     engine->setUI(new CEngine::EditorUI());
-    // 添加漫游相机
+    // Ready事件
     CEngine::EventBus().EngineReady += [engine]() {
+        // 添加平行光
+        engine->getRoot()->AddChild(CEngine::Light3D::Create());
+        // 添加漫游相机
         const auto camera = CEngine::Camera3D::Create();
         camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("Fly Camera"));
         engine->getRoot()->AddChild(camera);

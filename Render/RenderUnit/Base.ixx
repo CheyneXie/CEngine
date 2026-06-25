@@ -83,6 +83,18 @@ namespace CEngine::RenderUnit {
         }
 
         /**
+         * @brief 工具函数：重置 Uniform
+         * 
+         * @param sp 着色器程序
+         */
+        void RenderUtil_ResetShaderUniform(ShaderProgram *sp) {
+            if (!uniforms.empty())
+                for (auto& [name, value]: uniforms) {
+                    sp->SetShaderUniformToZero(name.c_str(), value.GetType());
+                }
+        }
+
+        /**
          * 设置着色器参数
          * @param name 变量名称
          * @param value 值

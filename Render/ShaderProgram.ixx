@@ -250,6 +250,29 @@ namespace CEngine {
             }
         }
 
+        void SetShaderUniformToZero(const char *name, ShaderUniformVar::Type&& type) {
+            if (type == ShaderUniformVar::Type::INT)
+                SetUniform(name, static_cast<int>(0));
+            else if (type == ShaderUniformVar::Type::UINT)
+                SetUniform(name, static_cast<unsigned int>(0));
+            else if (type == ShaderUniformVar::Type::FLOAT)
+                SetUniform(name, static_cast<float>(0));
+            else if (type == ShaderUniformVar::Type::DOUBLE)
+                SetUniform(name, static_cast<double>(0));
+            else if (type == ShaderUniformVar::Type::VEC2)
+                SetUniform(name, glm::vec2());
+            else if (type == ShaderUniformVar::Type::VEC3)
+                SetUniform(name, glm::vec3());
+            else if (type == ShaderUniformVar::Type::VEC4)
+                SetUniform(name, glm::vec4());
+            else if (type == ShaderUniformVar::Type::MAT3)
+                SetUniform(name, glm::mat3(1.f));
+            else if (type == ShaderUniformVar::Type::MAT4)
+                SetUniform(name, glm::mat4(1.f));
+            else if (type == ShaderUniformVar::Type::SAMPLER2D)
+                SetUniform(name, 0);
+        }
+
         std::string getName() const { return Name; }
 
         /// @property shader_program_id

@@ -12,6 +12,7 @@ module;
 export module CEngine.RenderUnit:PBR;
 import :Base;
 import CEngine.Render;
+import CEngine.Light;
 
 namespace CEngine::RenderUnit {
     export class PBR final : public Base {
@@ -28,12 +29,12 @@ namespace CEngine::RenderUnit {
          * @param RUS 
          * @param viewM 视图矩阵
          * @param projectM 投影矩阵
-         * @param camPos 相机位置
          */
-        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
-            auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM, camPos);
+        static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             for (auto ru : RUS) {
-                static_cast<PBR*>(ru)->Render(viewM, projectM, camPos, sp);
+                static_cast<PBR*>(ru)->Render(viewM, projectM, sp);
+                Texture::ResetTextureSlot();
             }
         }
 
@@ -42,16 +43,16 @@ namespace CEngine::RenderUnit {
          * 
          * @param viewM 视图矩阵
          * @param projectM 投影矩阵
-         * @param camPos 相机位置
          * @param sp 用于批渲染时传入
          */
-        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos, ShaderProgram *sp = nullptr) {
+        void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, ShaderProgram *sp = nullptr) {
             if (sp == nullptr)
-                sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM, camPos);
+                sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             sp->SetUniform(0, WorldMatrix);
             Mat.Use(sp);
             RenderUtil_SetShaderUniform(sp);
             mesh->Render();
+            RenderUtil_ResetShaderUniform(sp);
         }
 
         /**
@@ -59,15 +60,13 @@ namespace CEngine::RenderUnit {
          * 
          * @param viewM 视图矩阵
          * @param projectM 投影矩阵
-         * @param camPos 相机位置
          * @return ShaderProgram* 
          */
-        static ShaderProgram *RenderUtil_GetShaderProgramWithBasicsData(const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static ShaderProgram *RenderUtil_GetShaderProgramWithBasicsData(const glm::mat4 &viewM, const glm::mat4 &projectM) {
             auto sp = ShaderProgram::Get("PBR");
             sp->Use();
             sp->SetUniform(1, viewM);
             sp->SetUniform(2, projectM);
-            sp->SetUniform("CameraPosition", camPos);
             return sp;
         }
 

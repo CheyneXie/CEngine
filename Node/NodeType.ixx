@@ -16,6 +16,7 @@ namespace CEngine {
         Node3D,
         Camera3D,
         RenderUnit3D,
+        Light3D,
         Count // 哨兵值，代表成员总数
     };
 
@@ -25,6 +26,7 @@ namespace CEngine {
             case NodeType::Node3D: return "Node3D";
             case NodeType::Camera3D: return "Camera3D";
             case NodeType::RenderUnit3D: return "RenderUnit3D";
+            case NodeType::Light3D: return "Light3D";
             default: return "Error NodeType";
         }
     }

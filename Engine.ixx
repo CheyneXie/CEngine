@@ -17,7 +17,9 @@ import CEngine.Base;
 import CEngine.Logger;
 import CEngine.Node;
 import CEngine.Render;
+import CEngine.Light;
 import CEngine.RenderUnit;
+import CEngine.Utils.RenderUtils;
 import CEngine.UI;
 import CEngine.PresetsLoader;
 import CEngine.EventBus;
@@ -49,10 +51,6 @@ namespace CEngine {
         * @remark 堵塞型
         */
         void Loop();
-        /**
-         * 每绘制一次调用(即Mesh.Render函数后)
-         */
-        void DrawCallEnd();
         /**
         * 退出引擎主循环
         * @remark 仅标记为退出，不会立即退出引擎
@@ -153,16 +151,6 @@ namespace CEngine {
         Destroy();
     }
 
-    void Engine::DrawCallEnd() {
-        Texture::ResetTextureSlot();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glUseProgram(0);
-    }
-
     void Engine::Exit() const {
         glfwSetWindowShouldClose(window, true);
     }
@@ -234,6 +222,9 @@ namespace CEngine {
             viewM = glm::mat4(1.f);
             projectM = glm::mat4(1.f);
         }
+        std::vector<std::vector<RenderUnit::Base*>> RUS(static_cast<int>(RenderUnit::Type::Count));
+        Light::Directional *DirectionalLight = nullptr;
+        std::vector<Light::Base*> Lights;
         std::stack<Node *> stack;
         stack.push(RootNode);
         while (!stack.empty()) {
@@ -252,22 +243,31 @@ namespace CEngine {
             if (node->IsType(NodeType::RenderUnit3D)) {
                 auto ru3d = static_cast<RenderUnit3D *>(node);
                 auto ru = ru3d->GetRU();
-                std::vector<std::vector<RenderUnit::Base *>> RUS(static_cast<int>(RenderUnit::Type::Count));
                 switch (ru->GetType()) {
                     case RenderUnit::Type::Base: RUS[static_cast<int>(RenderUnit::Type::Base)].push_back(ru); break;
                     case RenderUnit::Type::PBR: RUS[static_cast<int>(RenderUnit::Type::PBR)].push_back(ru); break;
                     case RenderUnit::Type::Deferred_PBR: RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)].push_back(ru); break;
                     default: break;
                 }
-
-                auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
-                RenderUnit::Base::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Base)], viewM, projectM);
-                RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM, camPos);
-                RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM, camPos);
-
-                DrawCallEnd();
+            }
+            // Light
+            else if (node->IsType(NodeType::Light3D)) {
+                auto l = static_cast<Light3D*>(node)->GetLight();
+                if (l->GetType() == Light::Type::Directional) {
+                    if (DirectionalLight == nullptr) DirectionalLight = static_cast<Light::Directional*>(l);
+                } else Lights.push_back(l);
             }
         }
+        auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
+        // 帧常量
+        Utils::UploadFrameConstantsUBO(camPos, DirectionalLight);
+        // 点光
+        Light::Point::UploadSSBO(Lights);
+        // 执行渲染
+        RenderUnit::Base::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Base)], viewM, projectM);
+        RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM);
+        RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM);
+
         ui->ProcessUI();
         return (glfwGetTime() - time) * 1000.0;
     }

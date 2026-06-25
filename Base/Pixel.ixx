@@ -8,7 +8,8 @@
 
 module;
 #include <string.h>
-export module CEngine.Image:Pixel;
+#include <glm/glm.hpp>
+export module CEngine.Base:Pixel;
 import std;
 import CEngine.Utils;
 import CEngine.Logger;
@@ -47,6 +48,7 @@ namespace CEngine {
         RGB(const unsigned char r, const unsigned char g, const unsigned char b) : R(r), G(g), B(b) {
         };
         explicit RGB(const char *hex_color);
+        glm::vec3 ToVec3() const { return glm::vec3(R, G, B) / 255.f; };
         std::string ToString() const;
 
     private:
@@ -71,6 +73,7 @@ namespace CEngine {
         };
 
         RGB ToRGB() const { return {R, G, B}; };
+        glm::vec4 ToVec4() const { return glm::vec4(R, G, B, A) / 255.f; }
 
         std::string ToString() const;
 

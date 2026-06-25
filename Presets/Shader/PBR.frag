@@ -14,6 +14,33 @@ in VS_OUT
 
 out vec4 FragColor;
 
+layout (std140, binding = 0) uniform FrameConstants {
+    vec4 CameraPosition;            // 相机位置
+    vec4 LightDirection;            // 主方向光方向
+    vec4 LightColorAndIntensity;    // 主方向光颜色 + 光强度
+};
+
+struct PointLight {
+    vec3 Position;
+    float ConstantFactor;
+    float LinearFactor;
+    float QuadraticFactor;
+};
+
+layout (std430, binding = 1) buffer PointLightBuffer {
+    PointLight PointLights[];
+};
+
+layout (std140, binding = 2) uniform MaterialParameters
+{
+    float Emissive_Intensity;
+    float Metallic;
+    float Roughness;
+    float Opacity;
+    vec4 Diffuse_Color;
+    vec4 Emission_Color;
+};
+
 uniform sampler2D Tex_BaseColor;
 uniform sampler2D Tex_Emissive;
 uniform sampler2D Tex_Height;
@@ -22,23 +49,6 @@ uniform sampler2D Tex_Opacity;
 uniform sampler2D Tex_Metalness;
 uniform sampler2D Tex_Roughness;
 uniform sampler2D Tex_AmbientOcclusion;
-
-uniform vec3 CameraPosition;
-
-uniform vec3 LightDirection = vec3(0.5, -1.0, 0.5);
-uniform vec3 LightColor = vec3(1.0);
-uniform float LightIntensity = 5.0;
-
-layout (std140) uniform Material_Parameters
-{
-    float Emissive_Intensity;
-    float Metallic;
-    float Roughness;
-    float Opacity;
-
-    vec4 Diffuse_Color;
-    vec4 Emission_Color;
-};
 
 const float PI = 3.14159265359;
 
@@ -124,10 +134,10 @@ void main()
 
     vec3 N = GetNormal();
 
-    vec3 V = normalize(CameraPosition - FSIn.WorldPosition);
+    vec3 V = normalize(CameraPosition.xyz - FSIn.WorldPosition);
 
     // LightDirection = 光照射方向（UE风格）
-    vec3 L = normalize(-LightDirection);
+    vec3 L = normalize(-LightDirection.xyz);
 
     vec3 H = normalize(V + L);
 
@@ -154,7 +164,7 @@ void main()
 
     float NdotL = max(dot(N, L), 0.0);
 
-    vec3 Radiance = LightColor * LightIntensity;
+    vec3 Radiance = LightColorAndIntensity.rgb * LightColorAndIntensity.a;
 
     vec3 DirectLighting = (kD * Albedo / PI + Specular) * Radiance * NdotL;
 

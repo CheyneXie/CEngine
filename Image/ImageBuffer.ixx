@@ -10,7 +10,7 @@ module;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 export module CEngine.Image:ImageBuffer;
-import :Pixel;
+import CEngine.Base;
 import CEngine.Logger;
 
 namespace CEngine {
