@@ -47,6 +47,7 @@ namespace CEngine {
         }
 
         void Update(const double DeltaTime) override {
+            if (!p3d->IsActivated()) return;
             float delta = static_cast<float>(DeltaTime);
 
             if (InputSystem().Key(GLFW_KEY_W) == GLFW_PRESS) {

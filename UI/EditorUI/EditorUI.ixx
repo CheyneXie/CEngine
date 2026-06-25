@@ -14,6 +14,7 @@ import :FileBrowser;
 import :SceneTreeBrowser;
 import :Inspector;
 import :GPUResourceViewer;
+import :CreatePanel;
 import std;
 import CEngine.UI;
 import CEngine.Engine;
@@ -145,8 +146,8 @@ namespace CEngine {
                             DisplayInspector(scene_tree_browser);
                             ImGui::EndTabItem();
                         }
-                        if (ImGui::BeginTabItem("Env Settings")) {
-                            // DisplayInspector(scene_tree_browser);
+                        if (ImGui::BeginTabItem("Create")) {
+                            DisplayCreatePanel(scene_tree_browser);
                             ImGui::EndTabItem();
                         }
                         ImGui::EndTabBar();

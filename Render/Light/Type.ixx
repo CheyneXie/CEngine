@@ -25,4 +25,13 @@ import std;
         {Type::Point, "Point Light"},
         {Type::Spot, "Spot Light"}
     };
+
+    export const char* TypeToName(Type type) {
+        switch (type) {
+            case Type::Directional: return "Directional Light";
+            case Type::Point: return "Point Light";
+            case Type::Spot: return "Spot Light";
+            case Type::Count: return "Error";
+        }
+    }
 }

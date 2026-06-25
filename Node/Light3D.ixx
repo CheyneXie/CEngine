@@ -36,9 +36,11 @@ namespace CEngine {
             assert(L != nullptr && "Light3D 需要一个合法的 Light");
             auto type = L->GetType();
             if (type == Light::Type::Directional) {
-                static_cast<Light::Directional*>(L.get())->setDirection(GetWorldRotation().RotateVector({0, -1, 0}));
+                auto dl = static_cast<Light::Directional*>(L.get());
+                if (!dl->SetDirectionManually) dl->setDirection(GetWorldRotation().RotateVector({0, -1, 0}));
                 Event_ModelMatrixUpdated += [this](Node3D*) {
-                    static_cast<Light::Directional*>(this->L.get())->setDirection(this->GetWorldRotation().RotateVector({0, -1, 0}));
+                    auto dl = static_cast<Light::Directional*>(this->L.get());
+                    if (!dl->SetDirectionManually) dl->setDirection(this->GetWorldRotation().RotateVector({0, -1, 0}));
                 };
             } else if (type == Light::Type::Point) {
                 static_cast<Light::Point*>(L.get())->setPosition(GetWorldPosition());

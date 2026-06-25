@@ -20,24 +20,32 @@ namespace CEngine {
     public:
         explicit Camera(const float fov = 75.0f, const float aspect_ratio = 16.0f / 9.0f, const float z_near = 0.1f,
                         const float z_far = 5000.0f): FOV(fov), AspectRatio(aspect_ratio), zNear(z_near), zFar(z_far) {
+            EventBus().CameraActivated += [this](void* c) {
+                this->Activated = false;
+            };
             UpdateProjectionMatrix();
         };
 
-        void Active() {
+        void Activate() {
             EventBus().CameraActivated.Invoke(this);
+            Activated = true;
         }
+        bool IsActivated() const { return Activated; }
 
-        void SetFov(const float fov) {
+        float getFOV() const { return FOV; }
+        void setFOV(const float fov) {
             FOV = fov;
             UpdateProjectionMatrix();
         }
 
-        void SetAspectRatio(const float aspect_ratio) {
+        float getAspectRatio() const { return AspectRatio; }
+        void setAspectRatio(const float aspect_ratio) {
             AspectRatio = aspect_ratio;
             UpdateProjectionMatrix();
         }
 
-        void SetClippingPlane(const float z_near, const float z_far) {
+        std::pair<float, float> getClippingPlane() const { return {zNear, zFar}; }
+        void setClippingPlane(const float z_near, const float z_far) {
             zNear = z_near;
             zFar = z_far;
             UpdateProjectionMatrix();
@@ -72,5 +80,7 @@ namespace CEngine {
         float zNear;
         /// 远裁剪平面
         float zFar;
+
+        bool Activated = false;
     };
 }

@@ -27,8 +27,9 @@ namespace CEngine::Light {
         Directional(Directional&&) = default;
         Directional& operator=(Directional&&) = default;
 
+        bool SetDirectionManually = false;
+
         glm::vec3 getDirection() { return Direction; }
-        // Direction通过上层Light3D自动设置
         void setDirection(glm::vec3&& dir) { Direction = dir; }
 
     protected:

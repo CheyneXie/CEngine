@@ -43,7 +43,7 @@ target("CEngine")
     add_files("Subsystem/*.ixx", {public = true})
     add_files("Utils/*.ixx", {public = true})
     add_files("UI/*.ixx", {public = true})
-    add_files("UI/EditorUI/*.ixx", {public = true})
+    add_files("UI/EditorUI/**.ixx", {public = true})
     add_files("Presets/**.ixx", {public = true})
 
     add_deps("glad", "imgui")
