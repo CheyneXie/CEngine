@@ -33,17 +33,17 @@ namespace CEngine {
         }
 
         static void LoadTextures() {
-            auto data1 = new unsigned char[3]{ 255, 255, 255 };
-            Texture::Create("<White>", {1, 1, data1, ColorMode::RGB}); // White
+            auto data1 = new Gray[1]{ 1.f };
+            Texture::Create("<White>", {1, 1, 8, data1 }); // White
             delete[] data1;
-            auto data2 = new unsigned char[3]{ 0, 0, 0 };
-            Texture::Create("<Black>", {1, 1, data2, ColorMode::RGB}); // Black
+            auto data2 = new Gray[1]{ 0.f };
+            Texture::Create("<Black>", {1, 1, 8, data2 }); // Black
             delete[] data2;
-            auto data3 = new unsigned char[3]{ 127, 127, 127 };
-            Texture::Create("<Gray>", {1, 1, data3, ColorMode::RGB}); // Gray
+            auto data3 = new Gray[1]{ 0.5f };
+            Texture::Create("<Gray>", {1, 1, 8, data3 }); // Gray
             delete[] data3;
-            auto data4 = new unsigned char[3]{ 127, 127, 255 };
-            Texture::Create("<DefalueNormal>", {1, 1, data4, ColorMode::RGB}); // Defalue Normal
+            auto data4 = new RGB[1]{ { 127.f, 127.f, 255.f } };
+            Texture::Create("<DefalueNormal>", {1, 1, 8, data4 }); // Defalue Normal
             delete[] data4;
         }
 

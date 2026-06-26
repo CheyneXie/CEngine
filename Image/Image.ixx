@@ -1,137 +1,165 @@
 /**
  * @file Image.ixx
  * @brief 图像类
- * @version 1.0
+ * @version 2.0
  * @author Chaim
  * @date 2024/09/30
  */
 
+module;
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 export module CEngine.Image:Image;
-import :ImageBuffer;
 import CEngine.Base;
+import CEngine.Utils;
+import CEngine.Logger;
 import std;
 
 namespace CEngine {
+    ColorMode STBITypeToColorMode(int type) {
+        switch (type) {
+            case static_cast<int>(STBI_grey): return ColorMode::Gray;
+            case static_cast<int>(STBI_grey_alpha): return ColorMode::GrayA;
+            case static_cast<int>(STBI_rgb): return ColorMode::RGB;
+            case static_cast<int>(STBI_rgb_alpha): return ColorMode::RGBA;
+            default:
+                LogE("STBITypeToColorMode") << "不支持像素格式: " << type;
+                return ColorMode::NONE;
+        }
+    }
+    template <typename T>
+    concept IsDerivedFromBase = std::derived_from<T, Pixel>;
+    template <typename T>
+    concept SupportedPtr = std::is_same_v<T, float> || std::is_same_v<T, unsigned char> || std::is_same_v<T, unsigned short>;
+
     export class Image {
     public:
-        template<typename T>
-        Image(const unsigned int width, const unsigned int height, T data) : Width(width), Height(height), mColorMode(ColorMode::NONE), Data(nullptr) {
-            const unsigned int size = width * height;
-            if (size == 0) {
-                LogE(TAG) << "图像长或宽不能为零!";
-                return;
+        Image(const Image &) = delete;
+        Image &operator=(Image &tex) = delete;
+        Image(Image &&other) noexcept : Width(other.Width), Height(other.Height), Precision(other.Precision), mColorMode(other.mColorMode), Data(other.Data) {
+            other.Data = nullptr;
+        }
+        Image &operator=(Image &&other) noexcept {
+            if (this != &other) {
+                delete[] Data;
+                Width = other.Width;
+                Height = other.Height;
+                Precision = other.Precision;
+                mColorMode = other.mColorMode;
+                Data = other.Data;
+                other.Data = nullptr;
             }
-            if constexpr (std::is_same_v<T, GRAY *>) mColorMode = ColorMode::GRAY;
-            else if constexpr (std::is_same_v<T, GRAY_A *>) mColorMode = ColorMode::GRAY_A;
-            else if constexpr (std::is_same_v<T, RGB *>) mColorMode = ColorMode::RGB;
-            else if constexpr (std::is_same_v<T, RGBA *>) mColorMode = ColorMode::RGBA;
+            return *this;
+        }
+
+        Image() = default;
+
+        template<IsDerivedFromBase T>
+        Image(const unsigned int width, const unsigned int height, const int precision, T *data) : Width(width), Height(height), Precision(precision) {
+            if constexpr (std::is_same_v<T, Gray>) mColorMode = ColorMode::Gray;
+            else if constexpr (std::is_same_v<T, GrayA>) mColorMode = ColorMode::GrayA;
+            else if constexpr (std::is_same_v<T, RGB>) mColorMode = ColorMode::RGB;
+            else if constexpr (std::is_same_v<T, RGBA>) mColorMode = ColorMode::RGBA;
+            else if constexpr (std::is_same_v<T, Pixel>) static_assert(false, "不接受基类 Pixel 指针");
             else static_assert(false, "未知颜色模式");
-            if (mColorMode != ColorMode::NONE) {
-                Data = new T[size];
-                memcpy(Data, data, sizeof(T) * size);
-            } else {
-                LogE(TAG) << "未知数据类型!";
-                return;
-            }
-        }
 
-        Image(const unsigned int width, const unsigned int height, const unsigned char *buf, const ColorMode mode) : Width(width), Height(height),
-            mColorMode(mode), Data(nullptr) {
             const unsigned int size = width * height;
             if (size == 0) {
                 LogE(TAG) << "图像长或宽不能为零!";
                 return;
             }
-            if (mColorMode == ColorMode::GRAY) {
-                const auto data = new GRAY[size];
-                Data = data;
-                for (unsigned int i = 0; i < size; i++) {
-                    data[i].Value = buf[i];
-                }
-            } else if (mColorMode == ColorMode::GRAY_A) {
-                auto *data = new GRAY_A[size];
-                Data = data;
-                for (unsigned int i = 0; i < size; i++) {
-                    data[i].Value = buf[i * 2];
-                    data[i].Alpha = buf[i * 2 + 1];
-                }
-            } else if (mColorMode == ColorMode::RGB) {
-                const auto data = new RGB[size];
-                Data = data;
-                for (unsigned int i = 0; i < size; i++) {
-                    data[i].R = buf[i * 3];
-                    data[i].G = buf[i * 3 + 1];
-                    data[i].B = buf[i * 3 + 2];
-                }
-            } else if (mColorMode == ColorMode::RGBA) {
-                const auto data = new RGBA[size];
-                Data = data;
-                for (unsigned int i = 0; i < size; i++) {
-                    data[i].R = buf[i * 4];
-                    data[i].G = buf[i * 4 + 1];
-                    data[i].B = buf[i * 4 + 2];
-                    data[i].A = buf[i * 4 + 3];
-                }
-            } else {
-                LogE(TAG) << "未知数据类型!";
-                return;
-            }
-        }
 
-        explicit Image(const ImageBuffer &image_buf) {
-            new(this) Image(image_buf.GetWidth(), image_buf.GetHeight(), image_buf.GetBuffer(), image_buf.GetColorMode());
-        }
-
-        explicit Image(const char *image_path) {
-            new(this) Image(ImageBuffer(image_path));
+            Data = new T[size];
+            memcpy(Data, data, sizeof(T) * size);
         }
 
         ~Image() {
-            if (!Data) return;
-            if (mColorMode == ColorMode::GRAY) {
-                delete[] static_cast<GRAY *>(Data);
-            } else if (mColorMode == ColorMode::GRAY_A) {
-                delete[] static_cast<GRAY_A *>(Data);
-            } else if (mColorMode == ColorMode::RGB) {
-                delete[] static_cast<RGB *>(Data);
-            } else if (mColorMode == ColorMode::RGBA) {
-                delete[] static_cast<RGBA *>(Data);
+            delete[] Data;
+        }
+
+        template <SupportedPtr T>
+        static Image FromBuffer(const unsigned int width, const unsigned int height, const int precision, T *buffer, const ColorMode mode) {
+            assert(mode != ColorMode::NONE && "ColorMode 不合法");
+            const unsigned int size = width * height;
+            if (size == 0) {
+                LogE(TAG) << "图像长或宽不能为零!";
+                return Image();
+            }
+
+            switch (mode) {
+                case ColorMode::Gray: {
+                    std::vector<Gray> data;
+                    data.reserve(size);
+                    for (unsigned int i = 0; i < size; i++)
+                        data.emplace_back(buffer[i]);
+                    return Image(width, height, precision, data.data());
+                }
+                case ColorMode::GrayA: {
+                    std::vector<GrayA> data;
+                    data.reserve(size);
+                    for (unsigned int i = 0; i < size; i++)
+                        data.emplace_back(buffer[i * 2], buffer[i * 2 +1]);
+                    return Image(width, height, precision, data.data());
+                }
+                case ColorMode::RGB: {
+                    std::vector<RGB> data;
+                    data.reserve(size);
+                    for (unsigned int i = 0; i < size; i++)
+                        data.emplace_back(buffer[i * 3], buffer[i * 3 + 1], buffer[i * 3 + 2]);
+                    return Image(width, height, precision, data.data());
+                }
+                case ColorMode::RGBA: {
+                    std::vector<RGBA> data;
+                    data.reserve(size);
+                    for (unsigned int i = 0; i < size; i++)
+                        data.emplace_back(buffer[i * 4], buffer[i * 4 + 1], buffer[i * 4 + 2], buffer[i * 4 + 3]);
+                    return Image(width, height, precision, data.data());
+                }
+                default: return Image();
+            }
+        }
+
+        static Image FromFile(const char *file_path) {
+            if (!Utils::FileExists(file_path)) {
+                LogE(TAG) << "文件不存在: " << file_path;
+                return Image();
+            }
+            int width = 0;
+            int height = 0;
+            int PicType = 0;
+            if (stbi_is_hdr(file_path)) {
+                float *buf = stbi_loadf(file_path, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 32, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
+            } else if (stbi_is_16_bit(file_path)) {
+                unsigned short *buf = stbi_load_16(file_path, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 16, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
             } else {
-                LogE(TAG) << "数据存在, 但类型未定义, 无法清除!";
+                unsigned char *buf = stbi_load(file_path, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 8, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
             }
+            return Image();
         }
 
-        bool IsValid() const {
-            if (Data) return true;
-            return false;
-        }
-
-        void *GetBuffer() const {
-            if (mColorMode == ColorMode::GRAY) {
-                return static_cast<GRAY *>(Data);
-            }
-            if (mColorMode == ColorMode::GRAY_A) {
-                return static_cast<GRAY_A *>(Data);
-            }
-            if (mColorMode == ColorMode::RGB) {
-                return static_cast<RGB *>(Data);
-            }
-            if (mColorMode == ColorMode::RGBA) {
-                return static_cast<RGBA *>(Data);
-            }
-            return nullptr;
-        }
-
+        bool IsValid() const { return Data != nullptr; }
+        const Pixel *GetBuffer() const { return Data; }
         unsigned int GetWidth() const { return Width; }
         unsigned int GetHeight() const { return Height; }
+        unsigned int GetPrecision() const { return Precision; }
         ColorMode GetColorMode() const { return mColorMode; }
 
     private:
         const static char *TAG;
-        unsigned int Width;
-        unsigned int Height;
-        ColorMode mColorMode;
-        void *Data;
+        unsigned int Width = 0;
+        unsigned int Height = 0;
+        unsigned int Precision = 0;
+        ColorMode mColorMode = ColorMode::NONE;
+        Pixel *Data = nullptr;
     };
 
     const char *Image::TAG = "Image";

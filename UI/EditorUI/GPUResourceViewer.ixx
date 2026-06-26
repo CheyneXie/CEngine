@@ -122,6 +122,11 @@ namespace CEngine {
                             ImGui::Text("Size");
                             ImGui::TableNextColumn();
                             ImGui::Text("%d x %d", SelectedTexture->getWidth(), SelectedTexture->getHeight());
+                            ImGui::TableNextRow();
+                            ImGui::TableNextColumn();
+                            ImGui::Text("Precision");
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%d", SelectedTexture->getPrecision());
                             ImGui::EndTable();
                         }
                         ImGui::SeparatorText("Preview");

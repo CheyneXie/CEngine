@@ -46,6 +46,6 @@ namespace CEngine::Light {
         /**
          * @brief 颜色
          */
-        RGB Color = {255, 255, 255};
+        RGB Color = {1.f, 1.f, 1.f};
     };
 }

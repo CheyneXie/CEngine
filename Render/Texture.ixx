@@ -28,15 +28,48 @@ namespace CEngine {
             CurrentTextureSlot = 0;
         }
 
-        static Texture *Create(std::string name, const ImageBuffer &img) {
+        static Texture *Create(std::string name, const Image &img) {
+            if (!img.IsValid()) {
+                LogE(TAG) << "无效图像";
+                return nullptr;
+            }
+
+            int internalFormat = GL_RGBA8;
+            int dataFormat = GL_RGBA;
+            int precision = img.GetPrecision();
+            int per_size = sizeof(float);
+            switch (img.GetColorMode()) {
+                case ColorMode::Gray:
+                    internalFormat = precision == 32 ? GL_R32F : precision == 16 ? GL_R16 : GL_R8;
+                    dataFormat = GL_RED;
+                    break;
+                case ColorMode::GrayA:
+                    internalFormat = precision == 32 ? GL_RG32F : precision == 16 ? GL_RG16 : GL_RG8;
+                    dataFormat = GL_RG;
+                    per_size *= 2;
+                    break;
+                case ColorMode::RGB:
+                    internalFormat = precision == 32 ? GL_RGB32F : precision == 16 ? GL_RGB16 : GL_RGB8;
+                    dataFormat = GL_RGB;
+                    per_size *= 3;
+                    break;
+                case ColorMode::RGBA:
+                    internalFormat = precision == 32 ? GL_RGBA32F : precision == 16 ? GL_RGBA16 : GL_RGBA8;
+                    dataFormat = GL_RGBA;
+                    per_size *= 4;
+                    break;
+                default: break;
+            }
+
             // 非法路径字符作为引擎内置纹理的标识符
             if (!name.contains("<") & !name.contains(">")) {
                 // 计算MD5
-                const auto _md5 = md5::digestString(img.GetBuffer(), img.GetHeight() * img.GetWidth());
+                const auto _md5 = md5::digest(img.GetBuffer(), img.GetHeight() * img.GetWidth() * per_size);
                 // 非内置纹理添加MD5防撞
                 name += "#" + _md5;
             }
             if (All_Instances.contains(name)) return All_Instances[name];
+
             // 上传GPU
             unsigned int id = 0;
             glGenTextures(1, &id);
@@ -45,33 +78,10 @@ namespace CEngine {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            int internalFormat = GL_RGBA8;
-            int dataFormat = GL_RGBA;
-            switch (img.GetColorMode()) {
-                case ColorMode::GRAY:
-                    internalFormat = GL_R8;
-                    dataFormat = GL_RED;
-                    break;
-                case ColorMode::GRAY_A:
-                    internalFormat = GL_RG8;
-                    dataFormat = GL_RG;
-                    break;
-                case ColorMode::RGB:
-                    internalFormat = GL_RGB8;
-                    dataFormat = GL_RGB;
-                    break;
-                case ColorMode::RGBA:
-                    internalFormat = GL_RGBA8;
-                    dataFormat = GL_RGBA;
-                    break;
-                default: break;
-            }
-            // internalFormat = GL_RGB;
-            // dataFormat = GL_RGB;
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, static_cast<GLsizei>(img.GetWidth()), static_cast<GLsizei>(img.GetHeight()), 0, dataFormat,
-                         GL_UNSIGNED_BYTE, img.GetBuffer());
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, static_cast<GLsizei>(img.GetWidth()), static_cast<GLsizei>(img.GetHeight()),
+                0, dataFormat, GL_FLOAT, img.GetBuffer());
             glBindTexture(GL_TEXTURE_2D, 0);
-            auto tex = new Texture(id, name, internalFormat, dataFormat, img.GetWidth(), img.GetHeight());
+            auto tex = new Texture(id, name, internalFormat, dataFormat, img.GetWidth(), img.GetHeight(), img.GetPrecision());
             All_Instances.emplace(name, tex);
             return tex;
         }
@@ -81,7 +91,7 @@ namespace CEngine {
                 LogE(TAG) << "文件不存在: " << img_path;
                 return nullptr;
             }
-            const auto img = ImageBuffer(img_path);
+            const auto img = Image::FromFile(img_path);
             return Create(Utils::GetFileName(img_path, true), img);
         }
 
@@ -118,8 +128,8 @@ namespace CEngine {
             return All_Instances;
         }
 
-        Texture(const unsigned int id, std::string name, const int internal_format, const int data_format, const unsigned int width, const unsigned int height)
-            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Name(std::move(name)) {
+        Texture(const unsigned int id, std::string name, const int internal_format, const int data_format, const unsigned int width, const unsigned int height, const unsigned int precision)
+            : TextureID(id), InternalFormat(internal_format), DataFormat(data_format), Width(width), Height(height), Precision(precision), Name(std::move(name)) {
         }
 
         Texture(const Texture &) = delete;
@@ -164,13 +174,16 @@ namespace CEngine {
         /// @property Height
         unsigned int getHeight() const { return Height; }
 
+        /// @property Precision
+        unsigned int getPrecision() const { return Precision; }
+
     private:
         /// 记录纹理槽，需要在每次DrawCall后重置为零
         static int CurrentTextureSlot;
         unsigned int TextureID = 0;
         int InternalFormat = GL_RGBA8;
         int DataFormat = GL_RGBA;
-        unsigned int Width, Height;
+        unsigned int Width, Height, Precision;
         std::string Name;
 
         static std::unordered_map<std::string, Texture *, StringHash, StringEqual> All_Instances;

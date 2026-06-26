@@ -86,6 +86,9 @@ namespace CEngine::Utils {
         if (c >= 'a' && c <= 'f') return c - 'a' + 10;
         return 0; // 非法字符默认为0
     }
+    export float HexToFloat(const char c1, const char c2) {
+        return (static_cast<float>(Utils::HexToChar(c1)) * 16.0f + static_cast<float>(Utils::HexToChar(c2))) / 255.0f;
+    }
 
     export bool FileExists(const char *path) {
         return std::filesystem::exists(path) && std::filesystem::is_regular_file(path);
