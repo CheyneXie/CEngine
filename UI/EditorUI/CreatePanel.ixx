@@ -14,9 +14,22 @@ import :SceneTreeBrowser;
 import CEngine.Engine;
 import CEngine.Node;
 import CEngine.Light;
+import CEngine.Render;
 import CEngine.RenderUnit;
 
 namespace CEngine {
+    std::unique_ptr<RenderUnit::Base> CreateRU(std::string_view name, RenderUnit::Type type) {
+        auto no_delete = [](void*) {}; // 空删除器
+        auto mesh = Mesh::GetEngineMesh(name);
+        if (mesh == nullptr) return nullptr;
+        switch (type) {
+            case RenderUnit::Type::Base: return RenderUnit::Base::Create(std::shared_ptr<Mesh>(mesh, no_delete));
+            case RenderUnit::Type::PBR: return RenderUnit::PBR::Create(std::shared_ptr<Mesh>(mesh, no_delete), Material(true));
+            case RenderUnit::Type::Deferred_PBR: return RenderUnit::Deferred::Create(std::shared_ptr<Mesh>(mesh, no_delete), Material(true));
+            default: return nullptr;
+        }
+    }
+
     export void DisplayCreatePanel(const SceneTreeBrowser &scene_tree_browser) {
         auto node = scene_tree_browser.NodeSelected;
         if (node == nullptr || !node->IsValid()) {
@@ -83,16 +96,39 @@ namespace CEngine {
             ImGui::EndCombo();
         }
         ImGui::Spacing();
+        if (ImGui::Button("FlatTriangle", ImVec2(-1, BtnHeight))) {
+            auto ru = CreateRU("FlatTriangle", currentRenderType);
+            if (ru != nullptr && ru->IsValid()) {
+                node->AddChild(RenderUnit3D::Create(std::move(ru)));
+            }
+        }
+        ImGui::Spacing();
         if (ImGui::Button("Panel", ImVec2(-1, BtnHeight))) {
-
+            auto ru = CreateRU("Panel", currentRenderType);
+            if (ru != nullptr && ru->IsValid()) {
+                node->AddChild(RenderUnit3D::Create(std::move(ru)));
+            }
         }
         ImGui::Spacing();
         if (ImGui::Button("Cube", ImVec2(-1, BtnHeight))) {
-
+            auto ru = CreateRU("Cube", currentRenderType);
+            if (ru != nullptr && ru->IsValid()) {
+                node->AddChild(RenderUnit3D::Create(std::move(ru)));
+            }
         }
         ImGui::Spacing();
         if (ImGui::Button("Sphere", ImVec2(-1, BtnHeight))) {
-
+            auto ru = CreateRU("Sphere", currentRenderType);
+            if (ru != nullptr && ru->IsValid()) {
+                node->AddChild(RenderUnit3D::Create(std::move(ru)));
+            }
+        }
+        ImGui::Spacing();
+        if (ImGui::Button("Sushan", ImVec2(-1, BtnHeight))) {
+            auto ru = CreateRU("Sushan", currentRenderType);
+            if (ru != nullptr && ru->IsValid()) {
+                node->AddChild(RenderUnit3D::Create(std::move(ru)));
+            }
         }
         ImGui::Spacing();
     }

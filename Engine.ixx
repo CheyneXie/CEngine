@@ -198,7 +198,7 @@ namespace CEngine {
         };
 
         // 编译着色器
-        ShaderManager::LoadShaderProgram();
+        // ShaderManager::LoadShaderProgram();
 
         // 触发Event
         EventBus().EngineReady.Invoke();
@@ -231,9 +231,7 @@ namespace CEngine {
             Node *node = stack.top();
             stack.pop();
             if (!node->IsActive()) continue;
-            if (node->GetChildCount() > 0)
-                for (const auto child: node->GetChildren())
-                    stack.push(child);
+            stack.push_range(node->GetChildren());
 
             // Behaviour
             if (const auto behaviour = node->GetBehaviour(); behaviour != nullptr)

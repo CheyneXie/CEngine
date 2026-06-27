@@ -78,7 +78,7 @@ namespace CEngine {
                 if (ImGui::BeginPopupContextItem(node->name.c_str())) {
                     for (const auto& [_enmu, _name]: RenderUnit::TypeAndName) {
                         if (ImGui::MenuItem(std::format("Open With Shader \"{}\"", _name).c_str())) {
-                            if (const auto model = ModelImporter::import_model(node->path.string().c_str(), _enmu); model->IsValid()) {
+                            if (const auto model = ModelImporter::ImportModel(node->path.string().c_str(), _enmu); model->IsValid()) {
                                 if (scene_tree_browser.NodeSelected != nullptr)
                                     scene_tree_browser.NodeSelected->AddChild(model);
                                 else

@@ -35,7 +35,12 @@ namespace CEngine {
             (void) io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
             // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-            io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 13.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+            static constexpr unsigned char TTF_DATA[] = {
+                #embed "CEngine/ThirdParty/wqy-microhei.ttc"
+            };
+            ImFontConfig font_cfg;
+            font_cfg.FontDataOwnedByAtlas = false;
+            io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(TTF_DATA), sizeof(TTF_DATA), 13.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
             ImGui::StyleColorsDark();
             // ImGui::StyleColorsLight();
             ImGui_ImplGlfw_InitForOpenGL(Window, true);

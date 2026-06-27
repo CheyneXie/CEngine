@@ -13,6 +13,7 @@ export module CEngine.EditorUI:GPUResourceViewer;
 import std;
 import CEngine.Render;
 import CEngine.RenderUnit;
+import CEngine.PresetsLoader;
 import CEngine.Utils;
 
 namespace CEngine {
@@ -32,6 +33,10 @@ namespace CEngine {
             if (ImGui::BeginTabBar("##tabs#GPUResourceViewer")) {
                 if (ImGui::BeginTabItem("Shader Program")) {
                     ImGui::BeginChild("##ShaderProgram#List", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, 0), ImGuiWindowFlags_NoResize);
+                    if (ImGui::Button("Override Shader File To Default", ImVec2(-FLT_MIN, 0))) {
+                        PresetsLoader::LoadShader(true);
+                        ShaderManager::LoadShaderProgram();
+                    }
                     if (ImGui::Button("Reload All Shader", ImVec2(-FLT_MIN, 0))) {
                         ShaderManager::LoadShaderProgram();
                     }
@@ -141,7 +146,7 @@ namespace CEngine {
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Mesh")) {
-                    ImGui::Text("Mesh count: %lu", Mesh::GetAllIns().size());
+                    ImGui::Text("Mesh count: %lu", Mesh::GetAllLoaded().size());
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("GBuffer")) {

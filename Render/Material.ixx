@@ -19,8 +19,9 @@ namespace CEngine {
     export class Material {
     public:
 
-        Material() {
+        Material(bool upload_immediately = false) {
             glGenBuffers(1, &UBO_Parameters);
+            if (upload_immediately) UpdateParameters();
         }
 
         static Material ProcessAssimpMaterial(const aiMaterial *material, const char *model_file_path) {

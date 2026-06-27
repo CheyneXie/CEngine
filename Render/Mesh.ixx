@@ -62,6 +62,38 @@ namespace CEngine {
         };
 
         /**
+         * @brief 创建引擎 Mesh
+         * 
+         * @param vbi 顶点信息数据
+         * @param ebi 索引数据
+         */
+        static void CreateEngineMesh(std::string_view name, const std::vector<VertexInfo> &vbi, const std::vector<unsigned int> &ebi) {
+            if (EngineMeshes.contains(name)) // 防撞名
+                for (unsigned int i = 1; ; i++) {
+                    auto new_name = std::format("{}.{}", name, i);
+                    if (!EngineMeshes.contains(new_name))
+                        EngineMeshes.emplace(new_name, new Mesh(vbi, ebi));
+                }
+            else
+                EngineMeshes.emplace(name, new Mesh(vbi, ebi));
+        }
+
+        /**
+         * @brief Get the Engine Mesh object
+         * 
+         * @param name 名称
+         * @return Mesh* 
+         */
+        static Mesh* GetEngineMesh(std::string_view name) {
+            auto it = EngineMeshes.find(name);
+            if (it == EngineMeshes.end()) {
+                LogE(TAG) << "未找到指定 Engine Mesh: " << name;
+                return nullptr;
+            }
+            return it->second;
+        }
+
+        /**
          * @brief 创建用户 Mesh
          * 
          * @param vbi 顶点信息数据
@@ -74,21 +106,11 @@ namespace CEngine {
         }
 
         /**
-         * @brief 创建引擎 Mesh
-         * 
-         * @param vbi 顶点信息数据
-         * @param ebi 索引数据
-         */
-        static void CreateEngineMesh(std::string_view name, const std::vector<VertexInfo> &vbi, const std::vector<unsigned int> &ebi) {
-            EngineMeshes.emplace(name, new Mesh(vbi, ebi));
-        }
-
-        /**
          * @brief 获取所有已加载 Mesh
          * 
          * @return std::vector<std::weak_ptr<Mesh>>& 
          */
-        static std::vector<std::weak_ptr<Mesh>>& GetAllIns() {
+        static std::vector<std::weak_ptr<Mesh>>& GetAllLoaded() {
             Cleanup();
             return LoadedMeshes;
         }

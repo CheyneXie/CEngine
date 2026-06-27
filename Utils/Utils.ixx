@@ -7,6 +7,11 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <string.h>
+#ifdef _WIN32
+    #include <windows.h>
+#elif defined(__linux__)
+    #include <unistd.h>
+#endif
 export module CEngine.Utils;
 import std;
 #ifdef _WIN32
@@ -90,6 +95,25 @@ namespace CEngine::Utils {
         return (static_cast<float>(Utils::HexToChar(c1)) * 16.0f + static_cast<float>(Utils::HexToChar(c2))) / 255.0f;
     }
 
+    export std::string GetExecutableDirectory() {
+        std::string path;
+    #ifdef _WIN32
+        char buffer[MAX_PATH];
+        GetModuleFileNameA(NULL, buffer, MAX_PATH);
+        path = buffer;
+    #elif defined(__linux__)
+        char buffer[PATH_MAX];
+        ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+        if (len != -1) {
+            buffer[len] = '\0';
+            path = buffer;
+        }
+    #endif
+        // 截取最后一个路径分隔符之前的部分
+        size_t pos = path.find_last_of("/\\");
+        return (pos != std::string::npos) ? path.substr(0, pos) : "";
+    }
+
     export bool FileExists(const char *path) {
         return std::filesystem::exists(path) && std::filesystem::is_regular_file(path);
     }
@@ -112,6 +136,13 @@ namespace CEngine::Utils {
             return std::filesystem::path(file_path).stem().string();
         else
             return std::filesystem::path(file_path).filename().string();
+    }
+
+    export bool SaveFile(std::string file_name, const unsigned char* data, size_t len, bool _override = true) {
+        if (FileExists(file_name.c_str()) && !_override) return true;
+        std::ofstream ofs(file_name, std::ios::out | std::ios::binary);
+        if (!ofs.is_open()) return false;
+        return ofs.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(len)).good();
     }
 
     export void vec3_to_float3(const glm::vec3 &in, float *out) {

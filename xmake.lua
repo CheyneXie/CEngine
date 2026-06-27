@@ -56,9 +56,6 @@ target("CEngine")
 
     -- 运行时 DLL + 资产拷贝
     after_build(function (target)
-        os.cp(path.join(os.scriptdir(), "Presets/Shader"), target:targetdir())
-        os.cp(path.join(os.scriptdir(), "Presets/Mesh"), target:targetdir())
-        os.cp(path.join(os.scriptdir(), "ThirdParty/imgui/misc/fonts/Roboto-Medium.ttf"), target:targetdir())
         if is_plat("windows") then
             os.cp(path.join(os.scriptdir(), "ThirdParty/glfw3/lib/glfw3.dll"), target:targetdir())
             os.cp(path.join(os.scriptdir(), "ThirdParty/assimp/lib/assimp-vc143-mt.dll"), target:targetdir())
