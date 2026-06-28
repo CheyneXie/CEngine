@@ -20,11 +20,11 @@ import std;
     };
 
     // For UI
-    export std::vector<std::pair<Type, const char*>> TypeAndName = {
+    export constexpr std::array<std::pair<Type, const char*>, 3> TypeAndName = {{
         {Type::Directional, "Directional Light"},
         {Type::Point, "Point Light"},
         {Type::Spot, "Spot Light"}
-    };
+    }};
 
     export const char* TypeToName(Type type) {
         switch (type) {
@@ -33,5 +33,6 @@ import std;
             case Type::Spot: return "Spot Light";
             case Type::Count: return "Error";
         }
+        return "Error";
     }
 }

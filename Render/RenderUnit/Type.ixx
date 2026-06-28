@@ -20,9 +20,9 @@ import std;
     };
 
     // For UI
-    export std::vector<std::pair<Type, const char*>> TypeAndName = {
+    export constexpr std::array<std::pair<Type, const char*>, 3> TypeAndName = {{
         {Type::Base, "Base"},
         {Type::PBR, "PBR"},
         {Type::Deferred_PBR, "Deferred PBR"}
-    };
+    }};
 }

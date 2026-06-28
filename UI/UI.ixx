@@ -7,6 +7,7 @@
  */
 
 module;
+#include "ThirdParty/Fonts/wqy-microhei.ttc.h"
 #include <GLFW/glfw3.h>
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
@@ -35,12 +36,9 @@ namespace CEngine {
             (void) io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
             // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-            static constexpr unsigned char TTF_DATA[] = {
-                #embed "CEngine/ThirdParty/wqy-microhei.ttc"
-            };
             ImFontConfig font_cfg;
             font_cfg.FontDataOwnedByAtlas = false;
-            io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(TTF_DATA), sizeof(TTF_DATA), 13.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+            io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(wqy_microhei_ttc), wqy_microhei_ttc_len, 13.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
             ImGui::StyleColorsDark();
             // ImGui::StyleColorsLight();
             ImGui_ImplGlfw_InitForOpenGL(Window, true);

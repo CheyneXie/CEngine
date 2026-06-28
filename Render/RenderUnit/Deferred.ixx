@@ -99,7 +99,8 @@ namespace CEngine::RenderUnit {
 
     protected:
         Deferred(std::shared_ptr<Mesh> m, Material &&mat) : Base(std::move(m)), Mat(std::move(mat)) {
-            shader_program_names = { "Deferred-Geometry"/*, "Deferred-Lighting"*/ };
+            shader_program_names.push_back("Deferred-Geometry");
+            // shader_program_names.push_back("Deferred-Lighting");
         }
 
         Material Mat;

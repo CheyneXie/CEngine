@@ -167,11 +167,14 @@ namespace CEngine {
         glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &maxUniformLocations);
         LogI(TAG) << "当前设备最大Uniform数量: " << maxUniformLocations;
 
-        // GBuffer
-        // int width, height;
-        // glfwGetFramebufferSize(window, &width, &height);
-        // GBuffer::Init(window, width, height);
+        // GBuffer (Windows 启动不会触发FramebufferResized，也可能是dll版本低了)
+#ifdef _WIN32
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        RenderUnit::GBuffer::Init(window, width, height);
+#endif
         EventBus().FramebufferResized += RenderUnit::GBuffer::Init;
+
 
         // 主动获取 GLFWwindow 指针
         EventBus().GetWindowPtr += [this]() { return this->window; };
@@ -263,8 +266,8 @@ namespace CEngine {
         Light::Point::UploadSSBO(Lights);
         // 执行渲染
         RenderUnit::Base::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Base)], viewM, projectM);
-        RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM);
         RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM);
+        RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM);
 
         ui->ProcessUI();
         return (glfwGetTime() - time) * 1000.0;

@@ -124,7 +124,7 @@ namespace CEngine::RenderUnit {
 
     protected:
         Base(std::shared_ptr<Mesh> m) : mesh(std::move(m)) {
-            shader_program_names = { "Base" };
+            shader_program_names.push_back("Base");
         }
 
         std::shared_ptr<Mesh> mesh;

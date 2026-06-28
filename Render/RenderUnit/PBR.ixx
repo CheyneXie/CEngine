@@ -76,7 +76,7 @@ namespace CEngine::RenderUnit {
 
     protected:
         PBR(std::shared_ptr<Mesh> m, Material &&mat) : Base(std::move(m)), Mat(std::move(mat)) {
-            shader_program_names = { "PBR" };
+            shader_program_names.push_back("PBR");
         }
 
         Material Mat;

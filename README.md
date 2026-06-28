@@ -1,15 +1,16 @@
 # CEngine
 
-基于 OpenGL 的 3D 引擎（未完成）
+基于 OpenGL 的 3D 引擎
 
 ### 依赖
 #### Windows
 - XMake / CMake
 - MSVC (Build Tools for Visual Studio)
+- xxd (Git Bash 套件里有)
 
 #### Linux
 ```shell
-apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp-dev
+apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp-dev xxd
 ```
 
 ### 运行示例

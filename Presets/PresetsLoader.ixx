@@ -6,6 +6,19 @@
  * @date 2024/10/21
  */
 
+module;
+#include "Presets/Shader/Base.vert.h"
+#include "Presets/Shader/Base.frag.h"
+#include "Presets/Shader/PBR.vert.h"
+#include "Presets/Shader/PBR.frag.h"
+#include "Presets/Shader/Deferred-Geometry.vert.h"
+#include "Presets/Shader/Deferred-Geometry.frag.h"
+#include "Presets/Mesh/Cube.obj.h"
+#include "Presets/Mesh/FlatTriangle.obj.h"
+#include "Presets/Mesh/Panel.obj.h"
+#include "Presets/Mesh/Sphere.obj.h"
+#include "Presets/Mesh/Sushan.obj.h"
+
 export module CEngine.PresetsLoader;
 import std;
 import CEngine.Base;
@@ -57,30 +70,12 @@ namespace CEngine {
                 LogE(TAG) << "创建 Shader 文件夹失败: " << ec.message();
                 return;
             }
-            constexpr unsigned char Shader_Base_V[] = {
-                #embed "CEngine/Presets/Shader/Base.vert"
-            };
-            constexpr unsigned char Shader_Base_F[] = {
-                #embed "CEngine/Presets/Shader/Base.frag"
-            };
-            constexpr unsigned char Shader_PBR_V[] = {
-                #embed "CEngine/Presets/Shader/PBR.vert"
-            };
-            constexpr unsigned char Shader_PBR_F[] = {
-                #embed "CEngine/Presets/Shader/PBR.frag"
-            };
-            constexpr unsigned char Shader_Deferred_Geometry_V[] = {
-                #embed "CEngine/Presets/Shader/Deferred-Geometry.vert"
-            };
-            constexpr unsigned char Shader_Deferred_Geometry_F[] = {
-                #embed "CEngine/Presets/Shader/Deferred-Geometry.frag"
-            };
-            if(Utils::SaveFile(dirPath + "/Base.vert", Shader_Base_V, sizeof(Shader_Base_V), _override)
-            && Utils::SaveFile(dirPath + "/Base.frag", Shader_Base_F, sizeof(Shader_Base_F), _override)
-            && Utils::SaveFile(dirPath + "/PBR.vert", Shader_PBR_V, sizeof(Shader_PBR_V), _override)
-            && Utils::SaveFile(dirPath + "/PBR.frag", Shader_PBR_F, sizeof(Shader_PBR_F), _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Geometry.vert", Shader_Deferred_Geometry_V, sizeof(Shader_Deferred_Geometry_V), _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Shader_Deferred_Geometry_F, sizeof(Shader_Deferred_Geometry_F), _override)) {
+            if(Utils::SaveFile(dirPath + "/Base.vert", Base_vert, Base_vert_len, _override)
+            && Utils::SaveFile(dirPath + "/Base.frag", Base_frag, Base_frag_len, _override)
+            && Utils::SaveFile(dirPath + "/PBR.vert", PBR_vert, PBR_vert_len, _override)
+            && Utils::SaveFile(dirPath + "/PBR.frag", PBR_frag, PBR_frag_len, _override)
+            && Utils::SaveFile(dirPath + "/Deferred-Geometry.vert", Deferred_Geometry_vert, Deferred_Geometry_vert_len, _override)
+            && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Deferred_Geometry_frag, Deferred_Geometry_frag_len, _override)) {
             } else {
                 LogE(TAG) << "创建 GLSL 文件失败";
                 return;
@@ -90,26 +85,15 @@ namespace CEngine {
         }
 
         static void LoadEngineMesh() {
-            constexpr unsigned char MeshData_FlatTriangle[] = {
-                #embed "CEngine/Presets/Mesh/FlatTriangle.obj"
-            };
-            ModelImporter::ImportEngineMesh("FlatTriangle", MeshData_FlatTriangle, sizeof(MeshData_FlatTriangle));
-            constexpr unsigned char MeshData_Panel[] = {
-                #embed "CEngine/Presets/Mesh/Panel.obj"
-            };
-            ModelImporter::ImportEngineMesh("Panel", MeshData_Panel, sizeof(MeshData_Panel));
-            constexpr unsigned char MeshData_Cube[] = {
-                #embed "CEngine/Presets/Mesh/Cube.obj"
-            };
-            ModelImporter::ImportEngineMesh("Cube", MeshData_Cube, sizeof(MeshData_Cube));
-            constexpr unsigned char MeshData_Sphere[] = {
-                #embed "CEngine/Presets/Mesh/Sphere.obj"
-            };
-            ModelImporter::ImportEngineMesh("Sphere", MeshData_Sphere, sizeof(MeshData_Sphere));
-            constexpr unsigned char MeshData_Sushan[] = {
-                #embed "CEngine/Presets/Mesh/Sushan.obj"
-            };
-            ModelImporter::ImportEngineMesh("Sushan", MeshData_Sushan, sizeof(MeshData_Sushan));
+            ModelImporter::ImportEngineMesh("FlatTriangle", FlatTriangle_obj, FlatTriangle_obj_len);
+            
+            ModelImporter::ImportEngineMesh("Panel", Panel_obj, Panel_obj_len);
+            
+            ModelImporter::ImportEngineMesh("Cube", Cube_obj, Cube_obj_len);
+            
+            ModelImporter::ImportEngineMesh("Sphere", Sphere_obj, Sphere_obj_len);
+            
+            ModelImporter::ImportEngineMesh("Sushan", Sushan_obj, Sushan_obj_len);
         }
     };
 

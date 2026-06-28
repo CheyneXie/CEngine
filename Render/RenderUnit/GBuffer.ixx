@@ -130,15 +130,15 @@ namespace CEngine::RenderUnit {
             sp->SetUniform("GBuffer_Emission", EmissionTexture);
         }
 
-        std::vector<std::pair<const char*, unsigned int>> MakeInfoForUI() {
-            return {
+        std::array<std::pair<const char*, unsigned int>, 6> MakeInfoForUI() {
+            return {{
                 {"Depth", DepthTexture},
                 {"Position", PositionTexture},
                 {"Normal", NormalTexture},
                 {"Albedo & AO", AlbedoAOTexture},
                 {"Metallic & Roughness", MetallicRoughnessTexture},
                 {"Emission", EmissionTexture}
-            };
+            }};
         }
 
         std::pair<int, int> GetSize() {
