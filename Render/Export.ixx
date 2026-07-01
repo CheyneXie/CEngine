@@ -9,6 +9,7 @@ export import :Material;
 export import :Texture;
 export import :ShaderUniformVar;
 export import :Camera;
+export import :IBL;
 
 namespace CEngine {
     // @formatter:off

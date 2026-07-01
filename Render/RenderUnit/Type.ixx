@@ -14,14 +14,16 @@ import std;
  namespace CEngine::RenderUnit {
     export enum class Type {
         Base,
+        Postprocessing,
         PBR,
         Deferred_PBR,
         Count // 哨兵值，代表成员总数
     };
 
     // For UI
-    export constexpr std::array<std::pair<Type, const char*>, 3> TypeAndName = {{
+    export constexpr std::array<std::pair<Type, const char*>, 4> TypeAndName = {{
         {Type::Base, "Base"},
+        {Type::Postprocessing, "Post-Processing"},
         {Type::PBR, "PBR"},
         {Type::Deferred_PBR, "Deferred PBR"}
     }};

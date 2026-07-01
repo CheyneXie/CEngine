@@ -35,7 +35,7 @@ namespace CEngine {
         switch (node->GetType()) {
             case NodeType::Camera3D: ProcessCamera(static_cast<Camera*>(static_cast<Camera3D*>(node))); break;
             case NodeType::Light3D: ProcessLight(static_cast<Light3D*>(node)->GetLight()); break;
-            case NodeType::RenderUnit3D: ProcessRenderUnit(static_cast<RenderUnit3D*>(node)->GetRU());
+            case NodeType::RenderUnit3D: ProcessRenderUnit(static_cast<RenderUnit3D*>(node)->GetRU()); break;
             default: break;
         }  
     }

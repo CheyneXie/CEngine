@@ -4,6 +4,7 @@ export import :NodeType;
 export import :Node;
 export import :Node3D;
 export import :RenderUnit3D;
+export import :Atmosphere3D;
 export import :Camera3D;
 export import :Light3D;
 export import :Behaviour;

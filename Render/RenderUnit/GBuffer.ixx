@@ -123,11 +123,12 @@ namespace CEngine::RenderUnit {
         }
 
         void Use(ShaderProgram *sp) {
-            sp->SetUniform("GBuffer_Position", PositionTexture);
-            sp->SetUniform("GBuffer_Normal", NormalTexture);
-            sp->SetUniform("GBuffer_AlbedoAO", AlbedoAOTexture);
-            sp->SetUniform("GBuffer_MetallicRoughness", MetallicRoughnessTexture);
-            sp->SetUniform("GBuffer_Emission", EmissionTexture);
+            sp->SetUniform("GBuffer_Depth", Texture::_Use(DepthTexture));
+            sp->SetUniform("GBuffer_Position", Texture::_Use(PositionTexture));
+            sp->SetUniform("GBuffer_Normal", Texture::_Use(NormalTexture));
+            sp->SetUniform("GBuffer_AlbedoAO", Texture::_Use(AlbedoAOTexture));
+            sp->SetUniform("GBuffer_MetallicRoughness", Texture::_Use(MetallicRoughnessTexture));
+            sp->SetUniform("GBuffer_Emission", Texture::_Use(EmissionTexture));
         }
 
         std::array<std::pair<const char*, unsigned int>, 6> MakeInfoForUI() {
@@ -148,7 +149,7 @@ namespace CEngine::RenderUnit {
         GBuffer(const GBuffer &) = delete;
         GBuffer &operator=(GBuffer &tex) = delete;
         ~GBuffer() {
-            // glDeleteTextures(1, &DepthTexture);
+            glDeleteTextures(1, &DepthTexture);
             glDeleteTextures(1, &PositionTexture);
             glDeleteTextures(1, &NormalTexture);
             glDeleteTextures(1, &AlbedoAOTexture);

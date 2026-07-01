@@ -142,18 +142,27 @@ namespace CEngine {
             All_Instances.erase(Name);
         }
 
-        int Use() const {
+        static int RequestTextureSlot() {
             if (CurrentTextureSlot > 15) {
                 LogE(TAG) << "当前纹理槽已满！";
-                return -1;
+                return 0;
             }
-            glActiveTexture(GL_TEXTURE0 + CurrentTextureSlot);
-            glBindTexture(GL_TEXTURE_2D, TextureID);
             return CurrentTextureSlot++;
+        }
+
+        static int _Use(unsigned int id) {
+            auto slot = RequestTextureSlot();
+            glActiveTexture(GL_TEXTURE0 + slot);
+            glBindTexture(GL_TEXTURE_2D, id);
+            return slot;
         }
 
         static void UnUse() {
             glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        int Use() const {
+            return _Use(TextureID);
         }
 
         /// @property TextureID

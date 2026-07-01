@@ -15,7 +15,7 @@ import CEngine.Render;
 import CEngine.Light;
 
 namespace CEngine::RenderUnit {
-    export class PBR final : public Base {
+    export class PBR : public Base {
     public:
         Type GetType() override { return Type::PBR; }
 
@@ -46,6 +46,9 @@ namespace CEngine::RenderUnit {
          * @param sp 用于批渲染时传入
          */
         void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, ShaderProgram *sp = nullptr) {
+            #ifndef NDEBUG
+            if (GetType() != Type::PBR) LogW("PBR") << "派生类调用了父类的 Render 函数";
+            #endif
             if (sp == nullptr)
                 sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             sp->SetUniform(0, WorldMatrix);

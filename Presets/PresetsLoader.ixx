@@ -13,6 +13,9 @@ module;
 #include "Presets/Shader/PBR.frag.h"
 #include "Presets/Shader/Deferred-Geometry.vert.h"
 #include "Presets/Shader/Deferred-Geometry.frag.h"
+#include "Presets/Shader/Deferred-Lighting.vert.h"
+#include "Presets/Shader/Deferred-Lighting.frag.h"
+
 #include "Presets/Mesh/Cube.obj.h"
 #include "Presets/Mesh/FlatTriangle.obj.h"
 #include "Presets/Mesh/Panel.obj.h"
@@ -38,7 +41,11 @@ namespace CEngine {
         static void LoadAll() {
             LoadBehaviours();
             LoadTextures();
+            #ifdef NDEBUG
             LoadShader();
+            #else
+            LoadShader(true);
+            #endif
             LoadEngineMesh();
         }
 
@@ -75,7 +82,9 @@ namespace CEngine {
             && Utils::SaveFile(dirPath + "/PBR.vert", PBR_vert, PBR_vert_len, _override)
             && Utils::SaveFile(dirPath + "/PBR.frag", PBR_frag, PBR_frag_len, _override)
             && Utils::SaveFile(dirPath + "/Deferred-Geometry.vert", Deferred_Geometry_vert, Deferred_Geometry_vert_len, _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Deferred_Geometry_frag, Deferred_Geometry_frag_len, _override)) {
+            && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Deferred_Geometry_frag, Deferred_Geometry_frag_len, _override)
+            && Utils::SaveFile(dirPath + "/Deferred-Lighting.vert", Deferred_Lighting_vert, Deferred_Lighting_vert_len, _override)
+            && Utils::SaveFile(dirPath + "/Deferred-Lighting.frag", Deferred_Lighting_frag, Deferred_Lighting_frag_len, _override)) {
             } else {
                 LogE(TAG) << "创建 GLSL 文件失败";
                 return;

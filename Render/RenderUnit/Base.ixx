@@ -48,6 +48,10 @@ namespace CEngine::RenderUnit {
          * @param sp 用于批渲染时传入
          */
         void Render(const glm::mat4 &viewM, const glm::mat4 &projectM, ShaderProgram *sp = nullptr) {
+            #ifndef NDEBUG
+            if (GetType() != Type::Base) LogW("Base") << "派生类调用了父类的 Render 函数";
+            #endif
+            if (GetType() != Type::Base) return;
             if (sp == nullptr)
                 sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             sp->SetUniform(0, WorldMatrix);
