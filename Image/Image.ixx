@@ -119,11 +119,12 @@ namespace CEngine {
             }
         }
 
-        static Image FromFile(const char *file_path) {
+        static Image FromFile(const char *file_path, bool flip_vertically = false) {
             if (!Utils::FileExists(file_path)) {
                 LogE(TAG) << "文件不存在: " << file_path;
                 return Image();
             }
+            stbi_set_flip_vertically_on_load(flip_vertically);
             int width = 0;
             int height = 0;
             int PicType = 0;
@@ -139,6 +140,30 @@ namespace CEngine {
                 return std::move(img);
             } else {
                 unsigned char *buf = stbi_load(file_path, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 8, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
+            }
+            return Image();
+        }
+
+        static Image FromMemory(const unsigned char *buffer, int len, bool flip_vertically = false) {
+            stbi_set_flip_vertically_on_load(flip_vertically);
+            int width = 0;
+            int height = 0;
+            int PicType = 0;
+            if (stbi_is_hdr_from_memory(buffer, len)) {
+                float *buf = stbi_loadf_from_memory(buffer, len, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 32, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
+            } else if (stbi_is_16_bit_from_memory(buffer, len)) {
+                unsigned short *buf = stbi_load_16_from_memory(buffer, len, &width, &height, &PicType, STBI_default);
+                auto img = FromBuffer(width, height, 16, buf, STBITypeToColorMode(PicType));
+                stbi_image_free(buf);
+                return std::move(img);
+            } else {
+                unsigned char *buf = stbi_load_from_memory(buffer, len, &width, &height, &PicType, STBI_default);
                 auto img = FromBuffer(width, height, 8, buf, STBITypeToColorMode(PicType));
                 stbi_image_free(buf);
                 return std::move(img);

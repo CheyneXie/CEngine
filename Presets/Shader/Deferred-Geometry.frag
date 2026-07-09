@@ -28,7 +28,7 @@ uniform sampler2D Tex_Metalness;
 uniform sampler2D Tex_Roughness;
 uniform sampler2D Tex_AmbientOcclusion;
 
-layout (std140) uniform Material_Parameters
+layout (std140, binding = 2) uniform Material_Parameters
 {
     float Emissive_Intensity;
     float Metallic;

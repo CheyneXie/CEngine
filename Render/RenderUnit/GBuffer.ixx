@@ -146,15 +146,32 @@ namespace CEngine::RenderUnit {
             return {Width, Height};
         }
 
+        /// @property FBO
+        unsigned int getFBO() const { return FBO; }
+        /// @property DepthTexture
+        unsigned int getDepthTexture() const { return DepthTexture; }
+        /// @property PositionTexture
+        unsigned int getPositionTexture() const { return PositionTexture; }
+        /// @property NormalTexture
+        unsigned int getNormalTexture() const { return NormalTexture; }
+        /// @property AlbedoAOTexture
+        unsigned int getAlbedoAOTexture() const { return AlbedoAOTexture; }
+        /// @property MetallicRoughnessTexture
+        unsigned int getMetallicRoughnessTexture() const { return MetallicRoughnessTexture; }
+        /// @property EmissionTexture
+        unsigned int getEmissionTexture() const { return EmissionTexture; }
+
         GBuffer(const GBuffer &) = delete;
         GBuffer &operator=(GBuffer &tex) = delete;
+        GBuffer(GBuffer&&) = delete;
+        GBuffer& operator=(GBuffer&&) = delete;
         ~GBuffer() {
-            glDeleteTextures(1, &DepthTexture);
-            glDeleteTextures(1, &PositionTexture);
-            glDeleteTextures(1, &NormalTexture);
-            glDeleteTextures(1, &AlbedoAOTexture);
-            glDeleteTextures(1, &MetallicRoughnessTexture);
-            glDeleteTextures(1, &EmissionTexture);
+            if (DepthTexture) glDeleteTextures(1, &DepthTexture);
+            if (PositionTexture) glDeleteTextures(1, &PositionTexture);
+            if (NormalTexture) glDeleteTextures(1, &NormalTexture);
+            if (AlbedoAOTexture) glDeleteTextures(1, &AlbedoAOTexture);
+            if (MetallicRoughnessTexture) glDeleteTextures(1, &MetallicRoughnessTexture);
+            if (EmissionTexture) glDeleteTextures(1, &EmissionTexture);
         }
 
     private:

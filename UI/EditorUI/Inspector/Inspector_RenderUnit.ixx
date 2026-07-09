@@ -45,6 +45,10 @@ namespace CEngine {
 
     export void ProcessRenderUnit(RenderUnit::Base *ru) {
         if (ImGui::CollapsingHeader("RenderUnit", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::BeginDisabled();
+            auto type_name = RenderUnit::GetTypeName(ru->GetType());
+            ImGui::InputText("Type", const_cast<char *>(type_name), 16, ImGuiInputTextFlags_ReadOnly);
+            ImGui::EndDisabled();
             if (ImGui::TreeNodeEx("Shader Uniforms Override", ImGuiTreeNodeFlags_DefaultOpen)) {
                 for (auto &[name,suv]: ru->getUniforms()) {
                     const auto type = suv.GetType();
@@ -111,8 +115,10 @@ namespace CEngine {
                     ImGui::PopID();
                 }
                 ImGui::Separator();
-                int v = 0;
+                int v = 0, id = 0;
                 for (auto& name : ru->getShaderProgramNames()) {
+                    ImGui::PushID(++id);
+                    ImGui::SeparatorText(name.data());
                     auto sp = ShaderProgram::Get(name);
                     auto it = sp->getUniformsList().cbegin();
                     auto sz = sp->getUniformsList().size();
@@ -127,6 +133,7 @@ namespace CEngine {
                             ru->SetShaderUniform(item->second, item->first);
                         }
                     }
+                    ImGui::PopID();
                 }
                 ImGui::TreePop();
             }

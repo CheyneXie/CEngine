@@ -15,6 +15,18 @@ module;
 #include "Presets/Shader/Deferred-Geometry.frag.h"
 #include "Presets/Shader/Deferred-Lighting.vert.h"
 #include "Presets/Shader/Deferred-Lighting.frag.h"
+#include "Presets/Shader/IBL_EquirectToCube.vert.h"
+#include "Presets/Shader/IBL_EquirectToCube.frag.h"
+#include "Presets/Shader/IBL_Irradiance.vert.h"
+#include "Presets/Shader/IBL_Irradiance.frag.h"
+#include "Presets/Shader/IBL_Prefilter.vert.h"
+#include "Presets/Shader/IBL_Prefilter.frag.h"
+#include "Presets/Shader/IBL_BRDFLUT.vert.h"
+#include "Presets/Shader/IBL_BRDFLUT.frag.h"
+#include "Presets/Shader/Skybox.vert.h"
+#include "Presets/Shader/Skybox.frag.h"
+#include "Presets/Shader/Postprocess.vert.h"
+#include "Presets/Shader/Postprocess.frag.h"
 
 #include "Presets/Mesh/Cube.obj.h"
 #include "Presets/Mesh/FlatTriangle.obj.h"
@@ -72,24 +84,38 @@ namespace CEngine {
         static void LoadShader(bool _override = false) {
             std::string dirPath = Utils::GetExecutableDirectory() + "/Shader";
             std::error_code ec;
-            std::filesystem::create_directories(dirPath, ec); 
+            std::filesystem::create_directories(dirPath, ec);
             if (ec) {
                 LogE(TAG) << "创建 Shader 文件夹失败: " << ec.message();
                 return;
             }
-            if(Utils::SaveFile(dirPath + "/Base.vert", Base_vert, Base_vert_len, _override)
-            && Utils::SaveFile(dirPath + "/Base.frag", Base_frag, Base_frag_len, _override)
-            && Utils::SaveFile(dirPath + "/PBR.vert", PBR_vert, PBR_vert_len, _override)
-            && Utils::SaveFile(dirPath + "/PBR.frag", PBR_frag, PBR_frag_len, _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Geometry.vert", Deferred_Geometry_vert, Deferred_Geometry_vert_len, _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Deferred_Geometry_frag, Deferred_Geometry_frag_len, _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Lighting.vert", Deferred_Lighting_vert, Deferred_Lighting_vert_len, _override)
-            && Utils::SaveFile(dirPath + "/Deferred-Lighting.frag", Deferred_Lighting_frag, Deferred_Lighting_frag_len, _override)) {
-            } else {
+            const bool ok =
+                Utils::SaveFile(dirPath + "/Base.vert", Base_vert, Base_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/Base.frag", Base_frag, Base_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/PBR.vert", PBR_vert, PBR_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/PBR.frag", PBR_frag, PBR_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/Deferred-Geometry.vert", Deferred_Geometry_vert, Deferred_Geometry_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/Deferred-Geometry.frag", Deferred_Geometry_frag, Deferred_Geometry_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/Deferred-Lighting.vert", Deferred_Lighting_vert, Deferred_Lighting_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/Deferred-Lighting.frag", Deferred_Lighting_frag, Deferred_Lighting_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_EquirectToCube.vert", IBL_EquirectToCube_vert, IBL_EquirectToCube_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_EquirectToCube.frag", IBL_EquirectToCube_frag, IBL_EquirectToCube_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_Irradiance.vert", IBL_Irradiance_vert, IBL_Irradiance_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_Irradiance.frag", IBL_Irradiance_frag, IBL_Irradiance_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_Prefilter.vert", IBL_Prefilter_vert, IBL_Prefilter_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_Prefilter.frag", IBL_Prefilter_frag, IBL_Prefilter_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_BRDFLUT.vert", IBL_BRDFLUT_vert, IBL_BRDFLUT_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/IBL_BRDFLUT.frag", IBL_BRDFLUT_frag, IBL_BRDFLUT_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/Skybox.vert", Skybox_vert, Skybox_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/Skybox.frag", Skybox_frag, Skybox_frag_len, _override)
+                && Utils::SaveFile(dirPath + "/Postprocess.vert", Postprocess_vert, Postprocess_vert_len, _override)
+                && Utils::SaveFile(dirPath + "/Postprocess.frag", Postprocess_frag, Postprocess_frag_len, _override);
+            if (!ok) {
                 LogE(TAG) << "创建 GLSL 文件失败";
                 return;
             }
-            ShaderManager::ShaderDirectory.push_back("Shader");
+            static std::string shaderDir = dirPath; // static 字符串保活
+            ShaderManager::ShaderDirectory.push_back(shaderDir.c_str());
             ShaderManager::LoadShaderProgram();
         }
 

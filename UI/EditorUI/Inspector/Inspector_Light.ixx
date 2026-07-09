@@ -23,7 +23,7 @@ namespace CEngine {
                 if (ImGui::DragFloat("Illuminance", &illuminance, 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
                     light->setIlluminance(illuminance);
                 }
-                // TODO Ｃｏｌｏｒ
+                ImGui::ColorEdit3("Color", &(light->getColor().R));
             }
             if (type == Light::Type::Directional) {
                 auto dl = static_cast<Light::Directional*>(light);
@@ -46,7 +46,7 @@ namespace CEngine {
                     pl->setLinearFactor(LinearFactor);
                 }
                 auto QuadraticFactor = pl->getQuadraticFactor();
-                if (ImGui::DragFloat("Linear Factor", &QuadraticFactor, 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
+                if (ImGui::DragFloat("Quadratic Factor", &QuadraticFactor, 0.1, -FLT_MAX, FLT_MAX, "%.3f")) {
                     pl->setQuadraticFactor(QuadraticFactor);
                 }
             }

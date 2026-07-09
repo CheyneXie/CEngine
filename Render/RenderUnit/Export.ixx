@@ -6,4 +6,5 @@ export import :Postprocessing;
 export import :PBR;
 export import :Deferred;
 export import :GBuffer;
+export import :SceneFBO;
 

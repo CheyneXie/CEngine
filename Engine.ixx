@@ -167,13 +167,15 @@ namespace CEngine {
         glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &maxUniformLocations);
         LogI(TAG) << "当前设备最大Uniform数量: " << maxUniformLocations;
 
-        // GBuffer (Windows 启动不会触发FramebufferResized，也可能是dll版本低了)
-#ifdef _WIN32
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        RenderUnit::GBuffer::Init(window, width, height);
-#endif
+        {
+            // 主动初始化一次
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            RenderUnit::GBuffer::Init(window, width, height);
+            RenderUnit::SceneFBO::Init(window, width, height);
+        }
         EventBus().FramebufferResized += RenderUnit::GBuffer::Init;
+        EventBus().FramebufferResized += RenderUnit::SceneFBO::Init;
 
 
         // 主动获取 GLFWwindow 指针
@@ -200,9 +202,6 @@ namespace CEngine {
             this->CurrentCamera3D = dynamic_cast<Camera3D *>(this->CurrentCamera);
         };
 
-        // 编译着色器
-        // ShaderManager::LoadShaderProgram();
-
         // 触发Event
         EventBus().EngineReady.Invoke();
     }
@@ -210,6 +209,12 @@ namespace CEngine {
     double Engine::Process(const double DeltaTime) {
         // 计时开始
         const double time = glfwGetTime();
+        // 视口（确保捕获等辅助操作后视口正确）
+        {
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            glViewport(0, 0, width, height);
+        }
         // 设置清空颜色
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         // 清空颜色缓冲区 | 深度缓冲区
@@ -228,6 +233,7 @@ namespace CEngine {
         std::vector<std::vector<RenderUnit::Base*>> RUS(static_cast<int>(RenderUnit::Type::Count));
         Light::Directional *DirectionalLight = nullptr;
         std::vector<Light::Base*> Lights;
+        std::vector<Atmosphere3D*> Atmospheres;
         std::stack<Node *> stack;
         stack.push(RootNode);
         while (!stack.empty()) {
@@ -251,6 +257,10 @@ namespace CEngine {
                     default: break;
                 }
             }
+            // Atmosphere
+            else if (node->IsType(NodeType::Atmosphere3D)) {
+                Atmospheres.push_back(static_cast<Atmosphere3D*>(node));
+            }
             // Light
             else if (node->IsType(NodeType::Light3D)) {
                 auto l = static_cast<Light3D*>(node)->GetLight();
@@ -262,14 +272,28 @@ namespace CEngine {
         auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
         // 帧常量
         Utils::UploadFrameConstantsUBO(camPos, DirectionalLight);
+
         // 点光
-        Light::Point::UploadSSBO(Lights);
-        // 执行渲染
+        int pointLightCount = Light::Point::UploadSSBO(Lights);
+
+        // 天空盒背景
+        RenderUnit::SceneFBO().Bind();
+        Atmosphere3D::RenderAll(Atmospheres, viewM, projectM, camPos);
+
+        // 延迟
+        RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM, pointLightCount);
+
+        // 前向
         RenderUnit::Base::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Base)], viewM, projectM);
-        RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM);
         RenderUnit::PBR::RenderAll(RUS[static_cast<int>(RenderUnit::Type::PBR)], viewM, projectM);
 
+        // 后处理
+        RenderUnit::SceneFBO().Unbind();
+        RenderUnit::Postprocessing::RenderAll();
+
+        // UI
         ui->ProcessUI();
+
         return (glfwGetTime() - time) * 1000.0;
     }
 

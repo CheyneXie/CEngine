@@ -15,16 +15,22 @@ import :Base;
 
 namespace CEngine::Light {
     struct alignas(16) PointLightSSBO {
-        glm::vec3 Position;         // offset  0, 12 bytes
-        float     ConstantFactor;   // offset 12,  4 bytes
-        float     LinearFactor;     // offset 16,  4 bytes
-        float     QuadraticFactor;  // offset 20,  4 bytes
-        //                          // offset 24,  8 bytes padding (by alignas)
+        glm::vec3 Position;         // offset  0, size 12, align 4
+        float     ConstantFactor;   // offset 12, size 4,  align 4
+        float     LinearFactor;     // offset 16, size 4,  align 4
+        float     QuadraticFactor;  // offset 20, size 4,  align 4
+        std::byte padding[8];       // offset 24, size 8
+        glm::vec4 Color;            // offset 32, size 16, align 16
     };
     
     export class Point : public Base {
     public:
-        static void UploadSSBO(std::vector<Base*>& lights) {
+        /**
+         * @brief 上传点光源数据（固定槽: 1）
+         * @param lights 点光对象数组
+         * @return int 点光数量
+         */
+        static int UploadSSBO(std::vector<Base*>& lights) {
             std::vector<PointLightSSBO> data;
             for (auto& l : lights) {
                 if (l->GetType() != Type::Point) continue;
@@ -33,7 +39,9 @@ namespace CEngine::Light {
                     p->getPosition(),
                     p->getConstantFactor(),
                     p->getLinearFactor(),
-                    p->getQuadraticFactor()
+                    p->getQuadraticFactor(),
+                    {},
+                    glm::vec4(p->getColor().ToVec3(), p->getIlluminance())
                 });
             }
             static GLuint ssbo;
@@ -47,6 +55,7 @@ namespace CEngine::Light {
             );
             constexpr unsigned int BINDING_POINT = 1;
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_POINT, ssbo);
+            return static_cast<int>(data.size());
         }
 
         Type GetType() override { return Type::Point; }

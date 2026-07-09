@@ -44,6 +44,7 @@ target("CEngine")
         for _, f in ipairs(os.files(path.join(scriptdir, "Presets/Mesh/**")) or {}) do table.insert(sourcefiles, f) end
         for _, f in ipairs(os.files(path.join(scriptdir, "Presets/Shader/**")) or {}) do table.insert(sourcefiles, f) end
         for _, f in ipairs(os.files(path.join(scriptdir, "ThirdParty/Fonts/**")) or {}) do table.insert(sourcefiles, f) end
+        for _, f in ipairs(os.files(path.join(scriptdir, "ThirdParty/Environments/**")) or {}) do table.insert(sourcefiles, f) end
 
         for _, sourcefile in ipairs(sourcefiles) do
             if not sourcefile:endswith(".h") then

@@ -120,6 +120,7 @@ file(GLOB_RECURSE EMBED_SOURCES
     "Presets/Mesh/*"
     "Presets/Shader/*"
     "ThirdParty/Fonts/*"
+    "ThirdParty/Environments/*"
 )
 
 set(GENERATED_HEADERS "")

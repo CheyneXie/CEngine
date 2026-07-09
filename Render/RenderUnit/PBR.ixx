@@ -32,6 +32,7 @@ namespace CEngine::RenderUnit {
          */
         static void RenderAll(std::vector<Base*>& RUS, const glm::mat4 &viewM, const glm::mat4 &projectM) {
             auto sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
+            if (auto ibl = IBL::GetActive()) ibl->Bind(sp);
             for (auto ru : RUS) {
                 static_cast<PBR*>(ru)->Render(viewM, projectM, sp);
                 Texture::ResetTextureSlot();
@@ -49,6 +50,7 @@ namespace CEngine::RenderUnit {
             #ifndef NDEBUG
             if (GetType() != Type::PBR) LogW("PBR") << "派生类调用了父类的 Render 函数";
             #endif
+            Texture::ResetTextureSlot();
             if (sp == nullptr)
                 sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             sp->SetUniform(0, WorldMatrix);

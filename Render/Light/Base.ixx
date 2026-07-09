@@ -27,13 +27,13 @@ namespace CEngine::Light {
         float getIlluminance() { return Illuminance; }
         void setIlluminance(float lx) { Illuminance = lx; }
 
-        RGB getColor() { return Color; }
+        RGB& getColor() { return Color; }
         void setColor(const unsigned char r, const unsigned char g, const unsigned char b) {
             Color.R = r;
             Color.G = g;
             Color.B = b;
         }
-        void setColor(RGB&& color) { setColor(color.R, color.G, color.B); }
+        void setColor(const RGB& color) { setColor(color.R, color.G, color.B); }
 
     protected:
         Base() = default;

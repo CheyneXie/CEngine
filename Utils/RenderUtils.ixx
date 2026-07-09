@@ -15,11 +15,21 @@ import CEngine.Light;
 import std;
 
 namespace CEngine::Utils {
+    /**
+     * @brief 帧常量 FBO
+     */
     struct FrameConstantsUBO {
         glm::vec4 CameraPosition;
         glm::vec4 LightDirection;
         glm::vec4 LightColorAndIntensity;
     };
+
+    /**
+     * @brief 上传帧常量
+     * @param CamPos 摄像机位置
+     * @param L 方向光对象
+     * @return export 
+     */
     export void UploadFrameConstantsUBO(glm::vec3& CamPos, Light::Directional *L) {
         if (!L) return;
         FrameConstantsUBO data = {
@@ -37,4 +47,14 @@ namespace CEngine::Utils {
         glBindBufferBase(GL_UNIFORM_BUFFER, BINDING_POINT, ubo);
     }
 
+    /**
+     * @brief 获取一个空的 VAO（无顶点缓冲）
+     * @remark Core Profile 下 glDrawArrays 需要绑定 VAO。全屏三角形（由 gl_VertexID 生成顶点）
+     *         无需任何顶点属性，故复用此空 VAO。惰性创建，引擎生命周期内不释放。
+     */
+    export unsigned int GetEmptyVAO() {
+        static unsigned int vao = 0;
+        if (vao == 0) glGenVertexArrays(1, &vao);
+        return vao;
+    }
 }

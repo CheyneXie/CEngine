@@ -52,6 +52,7 @@ namespace CEngine::RenderUnit {
             if (GetType() != Type::Base) LogW("Base") << "派生类调用了父类的 Render 函数";
             #endif
             if (GetType() != Type::Base) return;
+            Texture::ResetTextureSlot();
             if (sp == nullptr)
                 sp = RenderUtil_GetShaderProgramWithBasicsData(viewM, projectM);
             sp->SetUniform(0, WorldMatrix);

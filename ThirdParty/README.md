@@ -21,3 +21,9 @@
 
 ### [Dear ImGui](https://github.com/ocornut/imgui) <font size=3>#1.92.8</font>
 > Dear ImGui is a bloat-free graphical user interface library for C++. It outputs optimized vertex buffers that you can render anytime in your 3D-pipeline-enabled application. It is fast, portable, renderer agnostic, and self-contained (no external dependencies).
+
+### [Wen Quan Yi Micro Hei](https://salsa.debian.org/fonts-team/fonts-wqy-microhei) <font size=3>#0.2-beta</font>
+> WenQuanYi Micro Hei font family is a Sans-Serif style (also known as Hei, Gothic or Dotum among the Chinese/Japanese/Korean users) high quality CJK outline font. It was derived from "Droid Sans Fallback", "Droid Sans" and "Droid Sans Mono" released by Google Corp.
+
+### [Mirrored Hall HDRI](https://polyhaven.com/a/mirrored_hall) <font size=3>@Grzegorz Wronkowski</font>
+
