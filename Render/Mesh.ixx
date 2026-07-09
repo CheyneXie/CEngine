@@ -84,13 +84,13 @@ namespace CEngine {
          * @param name 名称
          * @return Mesh* 
          */
-        static Mesh* GetEngineMesh(std::string_view name) {
+        static std::shared_ptr<Mesh> GetEngineMesh(std::string_view name) {
             auto it = EngineMeshes.find(name);
             if (it == EngineMeshes.end()) {
                 LogE(TAG) << "未找到指定 Engine Mesh: " << name;
                 return nullptr;
             }
-            return it->second;
+            return std::shared_ptr<Mesh>(it->second, [](Mesh*){});
         }
 
         /**

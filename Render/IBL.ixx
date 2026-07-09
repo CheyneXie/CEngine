@@ -178,7 +178,7 @@ namespace CEngine {
 
         // 全局活动 IBL（供 PBR/Deferred 取用）
         static IBL *GetActive() { return sActive; }
-        static void SetActive(IBL *ibl) { sActive = ibl; }
+        void SetActive() { sActive = this; }
 
         /// @property EnvCubemap
         GLuint getEnvCubemap() const { return envCube.id; }
@@ -258,8 +258,8 @@ namespace CEngine {
         void RenderCaptureCube(ShaderProgram *sp, const glm::mat4 &view, const glm::mat4 &proj) {
             sp->SetUniform(1, view);
             sp->SetUniform(2, proj);
-            auto *cube = Mesh::GetEngineMesh("Cube");
-            if (cube) cube->Render();
+            if (auto cube = Mesh::GetEngineMesh("Cube"))
+                cube->Render();
         }
 
         /**

@@ -17,25 +17,50 @@ apt install clang-21 libc++-21-dev libc++abi-21-dev xmake libglfw3-dev libassimp
 #### C++
 ```c++
 import CEngine.Engine;
+import CEngine.Base;
 import CEngine.EditorUI;
 import CEngine.Node;
+import CEngine.Light;
+import CEngine.Render;
+import CEngine.RenderUnit;
 import CEngine.EventBus;
+import std;
+
+using namespace CEngine;
 
 int main(){
     // 初始化引擎
-    CEngine::Engine::Init(1920, 1080, "title");
-    const auto engine = CEngine::Engine::GetIns();
+    Engine::Init(1920, 1080, "CEngine");
+    const auto engine = Engine::GetIns();
     // 设置UI
-    engine->setUI(new CEngine::EditorUI());
+    engine->setUI(new EditorUI());
     // Ready事件
-    CEngine::EventBus().EngineReady += [engine]() {
-        // 添加平行光
-        engine->getRoot()->AddChild(CEngine::Light3D::Create());
-        // 添加漫游相机
-        const auto camera = CEngine::Camera3D::Create();
-        camera->SetBehaviour(CEngine::BehaviourFactory::CreateBehaviour("Fly Camera"));
+    EventBus().EngineReady += [engine]() {
+        // —— 漫游相机 ——
+        const auto camera = Camera3D::Create();
+        camera->SetPosition({0, 0, 4});
+        camera->SetBehaviour(BehaviourFactory::CreateBehaviour("Fly Camera"));
         engine->getRoot()->AddChild(camera);
         camera->Activate();
+
+        // —— Atmosphere3D：天空盒 + IBL ——
+        const auto atm = Atmosphere3D::Create();
+        atm->getIBL().LoadDefault(); // 加载内置 HDRI
+        engine->getRoot()->AddChild(atm);
+
+        // —— 平行光 ——
+        const auto light = Light3D::Create();
+        light->SetRotation(EulerRotation::FromDegrees(-45.f, 30.f, 0.f));
+        light->GetLight()->setIlluminance(5.f);
+        engine->getRoot()->AddChild(light);
+
+        // —— 延迟金属球 ——
+        Material mat;
+        mat.Parameters.METALLIC = 1.0f;
+        mat.Parameters.ROUGHNESS = 0.35f;
+        mat.UpdateParameters();
+        auto ru3d = RenderUnit3D::Create(RenderUnit::Deferred::Create(Mesh::GetEngineMesh("Sphere"), std::move(mat)));
+        engine->getRoot()->AddChild(ru3d);
     };
     // 进入循环
     engine->Loop();

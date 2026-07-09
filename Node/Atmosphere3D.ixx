@@ -49,6 +49,7 @@ namespace CEngine {
          * @param projectM 投影矩阵
          */
         virtual void RenderAtmosphere(const glm::mat4 &viewM, const glm::mat4 &projectM) {
+            mIBL.SetActive();
             auto *sp = ShaderProgram::Get("Skybox");
 
             // 去掉平移，让天空跟随相机
@@ -66,7 +67,7 @@ namespace CEngine {
             glDepthMask(GL_FALSE);
             glDepthFunc(GL_LEQUAL); // Skybox.vert 把 z 设为 w（NDC z=1.0），通过 LEQUAL 写入最远
             glDisable(GL_CULL_FACE); // 相机在立方体内部，需关闭剔除以渲染内表面
-            if (auto *cube = Mesh::GetEngineMesh("Cube")) cube->Render();
+            if (auto cube = Mesh::GetEngineMesh("Cube")) cube->Render();
             glEnable(GL_CULL_FACE);
             glDepthFunc(GL_LESS);
             glDepthMask(GL_TRUE);

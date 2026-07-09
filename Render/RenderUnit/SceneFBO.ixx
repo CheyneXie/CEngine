@@ -26,15 +26,16 @@ namespace CEngine::RenderUnit {
     export class SceneFBO : public Object {
     public:
         static SceneFBO* Get() {
-            static std::unique_ptr<SceneFBO> instance = std::unique_ptr<SceneFBO>(new SceneFBO());
-            return instance.get();
+            return GetInstance().get();
         }
 
         static void Init(void *window, int width, int height) {
+            // 需要把该函数注册到 FramebufferSize 更改事件
             LogD("SceneFBO") << "SceneFBO 初始化";
             auto sf = Get();
             if (sf->Initialized) {
-                delete sf;
+                // 删除重新创建
+                ResetInstance();
                 sf = Get();
             }
             auto& scene = *sf;
@@ -120,12 +121,22 @@ namespace CEngine::RenderUnit {
         SceneFBO(const SceneFBO &) = delete;
         SceneFBO &operator=(SceneFBO &) = delete;
         ~SceneFBO() {
+
             if (ColorTexture) glDeleteTextures(1, &ColorTexture);
             if (DepthTexture) glDeleteTextures(1, &DepthTexture);
         }
 
     private:
         SceneFBO() = default;
+
+        static std::unique_ptr<SceneFBO>& GetInstance() {
+            static std::unique_ptr<SceneFBO> instance = std::unique_ptr<SceneFBO>(new SceneFBO());
+            return instance;
+        }
+
+        static void ResetInstance() {
+            GetInstance().reset(new SceneFBO());
+        }
 
         bool Initialized = false;
 

@@ -31,6 +31,17 @@ namespace CEngine {
             return L.get();
         }
 
+        template<class T>
+        T* GetLight() {
+            auto l = L.get();
+            if constexpr (std::is_same_v<T, Light::Base>) return l;
+            if constexpr (std::is_same_v<T, Light::Directional>)
+                assert(l->GetType() == Light::Type::Directional && "GetLight 预期类型错误");
+            if constexpr (std::is_same_v<T, Light::Point>)
+                assert(l->GetType() == Light::Type::Point && "GetLight 预期类型错误");
+            return static_cast<T*>(l);
+        }
+
     protected: 
         Light3D(std::unique_ptr<Light::Base> ru) : L(std::move(ru)) {
             assert(L != nullptr && "Light3D 需要一个合法的 Light");

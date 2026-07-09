@@ -50,8 +50,7 @@ namespace CEngine {
 
         virtual Node3D &UpdateModelMatrix() {
             // 平移矩阵 * 旋转矩阵 * 缩放矩阵
-            // ModelMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::mat4_cast(Rotation.ToOrientation()) * glm::scale(glm::mat4(1.0f), Scale);
-            ModelMatrix = glm::mat4_cast(Rotation.ToOrientation()) * glm::translate(glm::mat4(1.0f), Position) * glm::scale(glm::mat4(1.0f), Scale);
+            ModelMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::mat4_cast(Rotation.ToOrientation()) * glm::scale(glm::mat4(1.0f), Scale);
             Event_ModelMatrixUpdated.Invoke(this);
             return *this;
         }
@@ -83,15 +82,9 @@ namespace CEngine {
          * @return 世界变换矩阵
          */
         glm::mat4 GetWorldMatrix() const {
-            auto matrix = ModelMatrix;
-            auto parent = Parent;
-            while (parent != nullptr) {
-                if (parent->IsType(NodeType::Node3D)) {
-                    matrix = static_cast<Node3D*>(parent)->GetWorldMatrix() * matrix;
-                }
-                parent = parent->getParent();
-            }
-            return matrix;
+            if (Parent != nullptr && Parent->IsType(NodeType::Node3D))
+                return static_cast<Node3D*>(Parent)->GetWorldMatrix() * ModelMatrix;
+            return ModelMatrix;
         }
 
         glm::vec3 GetWorldPosition() const {
@@ -133,9 +126,6 @@ namespace CEngine {
         }
 
         glm::vec3 GetUp(const bool world = false) const {
-            // auto t1 = GetRight(world);
-            // auto t2 = GetForward(world);
-            // auto t3 = glm::cross(GetRight(world), GetForward(world));
             return glm::normalize(glm::cross(GetForward(world), GetRight(world)));
         }
 
@@ -147,7 +137,7 @@ namespace CEngine {
                     this->Children |
                     std::views::values |
                     std::views::filter([](Node *n){
-                        return n->IsType(NodeType::Node);
+                        return n->IsType(NodeType::Node3D);
                     }),
                     [who](Node *n) {
                         static_cast<Node3D*>(n)->Event_ModelMatrixUpdated.Invoke(who);

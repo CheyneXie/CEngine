@@ -26,8 +26,7 @@ namespace CEngine::RenderUnit {
     export class GBuffer : public Object {
     public:
         static GBuffer* Get() {
-            static std::unique_ptr<GBuffer> instance = std::unique_ptr<GBuffer>(new GBuffer());
-            return instance.get();
+            return GetInstance().get();
         }
 
         static void Init(void *window, int width, int height) {
@@ -36,7 +35,7 @@ namespace CEngine::RenderUnit {
             auto gb = Get();
             if (gb->Initialized) {
                 // 删除重新创建
-                delete gb;
+                ResetInstance();
                 gb = Get();
             }
             auto& gBuffer = *gb;
@@ -111,6 +110,7 @@ namespace CEngine::RenderUnit {
 
             // FBO Reset
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            gBuffer.Initialized = true;
         }
 
         void Bind() {
@@ -176,6 +176,15 @@ namespace CEngine::RenderUnit {
 
     private:
         GBuffer() = default;
+
+        static std::unique_ptr<GBuffer>& GetInstance() {
+            static std::unique_ptr<GBuffer> instance = std::unique_ptr<GBuffer>(new GBuffer());
+            return instance;
+        }
+
+        static void ResetInstance() {
+            GetInstance().reset(new GBuffer());
+        }
 
         bool Initialized = false;
 
