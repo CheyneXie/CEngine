@@ -34,12 +34,16 @@ namespace CEngine {
          * @param projectM 投影矩阵
          * @param camPos 相机位置
          */
-        static void RenderAll(std::vector<Atmosphere3D *> &atms, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
+        static Atmosphere3D* RenderAll(std::vector<Atmosphere3D *> &atms, const glm::mat4 &viewM, const glm::mat4 &projectM, const glm::vec3 &camPos) {
             auto distanceAndAtm = atms | std::views::transform([camPos](Atmosphere3D *atm) {
                 return std::make_pair(glm::distance(atm->GetWorldPosition(), camPos), atm);
             });
             auto [distance, atm] = *std::ranges::min_element(distanceAndAtm);
-            if (distance < atm->Radius) atm->RenderAtmosphere(viewM, projectM);
+            if (distance < atm->Radius){
+                atm->RenderAtmosphere(viewM, projectM);
+                return atm;
+            }
+            return nullptr;
         }
 
         /**

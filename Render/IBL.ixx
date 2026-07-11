@@ -20,7 +20,7 @@ import CEngine.Image;
 import :Texture;
 import :ShaderProgram;
 import :Mesh;
-import CEngine.Utils.RenderUtils;
+import :Utils;
 import CEngine.Utils;
 import CEngine.Logger;
 import std;
@@ -188,6 +188,12 @@ namespace CEngine {
         GLuint getPrefilterCubemap() const { return prefilterCube.id; }
         /// @property BRDFLUT
         GLuint getBRDFLUT() const { return brdfLUT; }
+        /// @property DiffuseIBLStrength
+        void setDiffuseIBLStrength(float s) { DiffuseIBLStrength = s; }
+        float getDiffuseIBLStrength() { return DiffuseIBLStrength; }
+        /// @property SpecularIBLStrength
+        void setSpecularIBLStrength(float s) { SpecularIBLStrength = s; }
+        float getSpecularIBLStrength() { return SpecularIBLStrength; }
 
     private:
         /**
@@ -333,7 +339,7 @@ namespace CEngine {
                 auto *sp = ShaderProgram::Get("IBL_BRDFLUT");
                 sp->Use();
                 Attach2D(brdfLUT);
-                glBindVertexArray(Utils::GetEmptyVAO());
+                glBindVertexArray(GetEmptyVAO());
                 glDrawArrays(GL_TRIANGLES, 0, 3);
                 glBindVertexArray(0);
             }
@@ -357,6 +363,9 @@ namespace CEngine {
         GLuint brdfLUT = 0;       // GL_TEXTURE_2D (RG16F)
         GLuint captureFBO = 0;
         bool generated = false;
+
+        float DiffuseIBLStrength = 1;
+        float SpecularIBLStrength = 1;
 
         static IBL *sActive;
     };

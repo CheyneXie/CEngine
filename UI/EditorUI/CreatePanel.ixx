@@ -19,13 +19,12 @@ import CEngine.RenderUnit;
 
 namespace CEngine {
     std::unique_ptr<RenderUnit::Base> CreateRU(std::string_view name, RenderUnit::Type type) {
-        auto no_delete = [](void*) {}; // 空删除器
         auto mesh = Mesh::GetEngineMesh(name);
         if (mesh == nullptr) return nullptr;
         switch (type) {
-            case RenderUnit::Type::Base: return RenderUnit::Base::Create(std::shared_ptr<Mesh>(mesh, no_delete));
-            case RenderUnit::Type::PBR: return RenderUnit::PBR::Create(std::shared_ptr<Mesh>(mesh, no_delete), Material(true));
-            case RenderUnit::Type::Deferred_PBR: return RenderUnit::Deferred::Create(std::shared_ptr<Mesh>(mesh, no_delete), Material(true));
+            case RenderUnit::Type::Base: return RenderUnit::Base::Create(mesh);
+            case RenderUnit::Type::PBR: return RenderUnit::PBR::Create(mesh, Material(true));
+            case RenderUnit::Type::Deferred_PBR: return RenderUnit::Deferred::Create(mesh, Material(true));
             default: return nullptr;
         }
     }

@@ -17,6 +17,8 @@ layout (std140, binding = 0) uniform FrameConstants {
     vec4 CameraPosition;            // 相机位置
     vec4 LightDirection;            // 主方向光方向（从光出发）
     vec4 LightColorAndIntensity;    // RGB主方向光颜色 + A光强度
+    float DiffuseIBLStrength;       // IBL 强度
+    float SpecularIBLStrength;      // IBL 强度
 };
 
 // 点光
@@ -44,7 +46,6 @@ uniform sampler2D GBuffer_Emission;
 uniform samplerCube IrradianceMap;
 uniform samplerCube PrefilterMap;
 uniform sampler2D BRDFLUT;
-uniform float IBLStrengh = 1.0;
 
 // 常量
 const float PI = 3.14159265359;
@@ -156,12 +157,12 @@ void main()
     vec3 kS = F;
     vec3 kD = (vec3(1.0) - kS) * (1.0 - MetallicValue);
 
-    vec3 irradiance = texture(IrradianceMap, N).rgb * IBLStrengh;
-    vec3 diffuseIBL = irradiance * Albedo;
+    vec3 irradiance = texture(IrradianceMap, N).rgb;
+    vec3 diffuseIBL = irradiance * Albedo * DiffuseIBLStrength;
 
     vec3 prefilteredColor = textureLod(PrefilterMap, R, RoughnessValue * MAX_REFLECTION_LOD).rgb;
     vec2 brdf = texture(BRDFLUT, vec2(max(dot(N, V), 0.0), RoughnessValue)).rg;
-    vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
+    vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y) * SpecularIBLStrength;
 
     vec3 Ambient = (kD * diffuseIBL + specularIBL) * AO;
 

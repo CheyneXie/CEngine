@@ -269,16 +269,18 @@ namespace CEngine {
                 } else Lights.push_back(l);
             }
         }
+        // 相机位置
         auto camPos = CurrentCamera3D != nullptr ? CurrentCamera3D->GetPosition() : WorldZero;
-        // 帧常量
-        Utils::UploadFrameConstantsUBO(camPos, DirectionalLight);
-
+        
         // 点光
         int pointLightCount = Light::Point::UploadSSBO(Lights);
 
         // 天空盒背景
         RenderUnit::SceneFBO().Bind();
         Atmosphere3D::RenderAll(Atmospheres, viewM, projectM, camPos);
+
+        // 帧常量（需要Atmosphere3D先激活IBL）
+        Utils::UploadFrameConstantsData(camPos, DirectionalLight);
 
         // 延迟
         RenderUnit::Deferred::RenderAll(RUS[static_cast<int>(RenderUnit::Type::Deferred_PBR)], viewM, projectM, pointLightCount);

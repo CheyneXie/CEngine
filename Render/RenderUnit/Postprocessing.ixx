@@ -33,7 +33,7 @@ namespace CEngine::RenderUnit {
             sp->Use();
             SceneFBO().Use(sp); // 绑定 SceneColor
 
-            glBindVertexArray(Utils::GetEmptyVAO());
+            glBindVertexArray(GetEmptyVAO());
             glDrawArrays(GL_TRIANGLES, 0, 3);
             glBindVertexArray(0);
 

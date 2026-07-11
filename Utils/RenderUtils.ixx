@@ -12,6 +12,7 @@ module;
 #include <glm/glm.hpp>
 export module CEngine.Utils.RenderUtils;
 import CEngine.Light;
+import CEngine.Render;
 import std;
 
 namespace CEngine::Utils {
@@ -22,20 +23,24 @@ namespace CEngine::Utils {
         glm::vec4 CameraPosition;
         glm::vec4 LightDirection;
         glm::vec4 LightColorAndIntensity;
+        float DiffuseIBLStrength;
+        float SpecularIBLStrength;
     };
 
     /**
      * @brief 上传帧常量
      * @param CamPos 摄像机位置
      * @param L 方向光对象
-     * @return export 
+     * @param IBLStrength IBL光照强度
      */
-    export void UploadFrameConstantsUBO(glm::vec3& CamPos, Light::Directional *L) {
+    export void UploadFrameConstantsUBO(glm::vec3& CamPos, Light::Directional *L, IBL *ibl) {
         if (!L) return;
         FrameConstantsUBO data = {
             {CamPos, 0},
             {L->getDirection(), 0},
-            {L->getColor().ToVec3(), L->getIlluminance()}
+            {L->getColor().ToVec3(), L->getIlluminance()},
+            ibl ? ibl->getDiffuseIBLStrength() : 1,
+            ibl ? ibl->getSpecularIBLStrength() : 1
         };
 
         static unsigned int ubo = 0;
@@ -48,13 +53,14 @@ namespace CEngine::Utils {
     }
 
     /**
-     * @brief 获取一个空的 VAO（无顶点缓冲）
-     * @remark Core Profile 下 glDrawArrays 需要绑定 VAO。全屏三角形（由 gl_VertexID 生成顶点）
-     *         无需任何顶点属性，故复用此空 VAO。惰性创建，引擎生命周期内不释放。
+     * @brief 上传帧数据，包括 FrameConstantsUBO、IBL
+     * @param CamPos 相机位置
+     * @param L 方向光对象
+     * @param atmosphere 天空盒对象
      */
-    export unsigned int GetEmptyVAO() {
-        static unsigned int vao = 0;
-        if (vao == 0) glGenVertexArrays(1, &vao);
-        return vao;
+    export void UploadFrameConstantsData(glm::vec3& CamPos, Light::Directional *L) {
+        auto ibl = IBL::GetActive();
+        // TODO 设置高位 IBL 纹理
+        UploadFrameConstantsUBO(CamPos, L, ibl);
     }
 }

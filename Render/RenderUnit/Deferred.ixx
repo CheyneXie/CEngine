@@ -93,7 +93,7 @@ namespace CEngine::RenderUnit {
             if (auto *ibl = IBL::GetActive()) ibl->Bind(sp);
             sp->SetUniform("PointLightCount", pointLightCount);
 
-            glBindVertexArray(Utils::GetEmptyVAO());
+            glBindVertexArray(GetEmptyVAO());
             glDrawArrays(GL_TRIANGLES, 0, 3);
             glBindVertexArray(0);
 
